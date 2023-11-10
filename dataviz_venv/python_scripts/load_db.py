@@ -6,16 +6,16 @@ conn = sqlite3.connect('blood_tests.db')
 cursor = conn.cursor()
 
 # Load data from the "blood_indicators.csv" CSV file into the "blood_indicators" table
-with open('blood_indicators.csv', 'r') as csv_file:
+with open('/home/rodrigo/repos/DATAVIZ_project/dataviz_venv/data/blood_indicators.csv', 'r') as csv_file:
     csv_reader = csv.reader(csv_file)
     for row in csv_reader:
-        cursor.execute("INSERT INTO blood_indicators (column1, column2, column3, column4, column5, column6, column7, column8, column9, column10, column11, column12, column13, column14, column15, column16, column17, column18, column19, column20, column21, column22, column23, column24, column25, column26, column27, column28, column29, column30, column31, column32, column33, column34, column35, column36, column37, column38, column39) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", row)
+        cursor.execute("INSERT INTO blood_indicators (ID, DATE, Albumin_g_dL, Albumin_g_L, Alanine_aminotransferase_ALT_U_L, Aspartate_aminotransferase_AST_U_L, Alkaline_phosphatase_U_L, Blood_urea_nitrogen_mg_dL, Blood_urea_nitrogen_mmol_L, Total_calcium_mg_dL, Total_calcium_mmol_L, Creatine_Phosphokinase_CPK_IU_L, Cholesterol_mg_dL, Cholesterol_mmol_L, Bicarbonate_mmol_L, Creatinine_mg_dL, Creatinine_umol_L, Gamma_glutamyl_transferase_U_L, Glucose_serum_mg_dL, Glucose_serum_mmol_L, Iron_refrigerated_ug_dL, Iron_refrigerated_umol_L, Lactate_dehydrogenase_U_L, Phosphorus_mg_dL, Phosphorus_mmol_L, Total_bilirubin_mg_dL, Total_bilirubin_umol_L, Total_protein_g_dL, Total_protein_g_L, Uric_acid_mg_dL, Uric_acid_umol_L, Sodium_mmol_L, Potassium_mmol_L, Chloride_mmol_L, Osmolality_mmol_Kg, Globulin_g_dL, Globulin_g_L, Triglycerides_mg_dL, Triglycerides_mmol_L) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", row)
 
 
-with open('patients.csv', 'r') as csv_file:
+with open('/home/rodrigo/repos/DATAVIZ_project/dataviz_venv/data/patients.csv', 'r') as csv_file:
     csv_reader = csv.reader(csv_file)
     for row in csv_reader:
-        cursor.execute("INSERT INTO patients (column1, column2, column3, column4, column5) VALUES (?, ?, ?, ?, ?)", row)
+        cursor.execute("INSERT INTO patients (ID, FIRST_NAME, LAST_NAME, BIRTH_DATE, GENDER) VALUES (?, ?, ?, ?, ?)", row)
         
 # Commit the changes and close the database connection
 conn.commit()
