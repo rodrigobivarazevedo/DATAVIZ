@@ -6,7 +6,7 @@ cursor = conn.cursor()
 
 # Create the "blood_indicators" table with the specified columns
 cursor.execute('''
-   CREATE TABLE IF NOT EXISTS blood_indicators (
+CREATE TABLE IF NOT EXISTS blood_indicators (
     ID INTEGER,
     DATE DATE,
     Albumin_g_dL INTEGER,
@@ -46,19 +46,21 @@ cursor.execute('''
     Globulin_g_L INTEGER,
     Triglycerides_mg_dL INTEGER,
     Triglycerides_mmol_L INTEGER
-);
-
+)
 ''')
 
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS patients (
-        ID INTEGER,
+        ID INTEGER PRIMARY KEY,
         FIRST_NAME TEXT,
         LAST_NAME TEXT,
         BIRTH_DATE DATE,
         GENDER TEXT
     )
 ''')
+
+
+
 
 # Commit the changes and close the database connection
 conn.commit()
