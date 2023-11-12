@@ -1,10 +1,12 @@
-from flask import Flask, jsonify
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import json
 from datetime import datetime
+import requests
+
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blood_tests.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/rodrigo/repos/DATAVIZ_project/dataviz_venv/db/blood_tests.db'
 db = SQLAlchemy(app)
 
 class Patient(db.Model):
@@ -63,13 +65,13 @@ class BloodIndicator(db.Model):
     
     
 # Sample raw data endpoint for patient data
-@app.route('/<int:patientID>/raw')
-def get_patient_raw_data(patientID):
+@app.route('/<int:patientID>/raw', methods=['GET'])
+def get_patient_raw(patientID):
     # Get patient information from the database
     patient = Patient.query.get_or_404(patientID)
 
     # Construct the data to be returned
-    data = {
+    patient_data = {
         'patientID': patient.ID,
         'first_name': patient.FIRST_NAME,
         'last_name': patient.LAST_NAME,
@@ -77,29 +79,48 @@ def get_patient_raw_data(patientID):
         'gender': patient.GENDER,
     }
 
-    return jsonify(data)
+    return jsonify(patient_data)
 
 # Sample FHIR data endpoint for Patient data
 @app.route('/<int:patientID>/fhir')
-def get_patient_fhir_data(patientID):
+def get_patient_fhir(patientID):
     
-    data = {
-        'patientID': patient.ID,
-        'first_name': patient.FIRST_NAME,
-        'last_name': patient.LAST_NAME,
-        'birth_date': str(patient.BIRTH_DATE),
-        'gender': patient.GENDER,     
+    patient = Patient.query.get_or_404(patientID)
+    
+    fhir_patient = {
+        "resourceType": "Patient",
+        "id": patient.ID,
+        "name": [
+            {
+                "given": [patient.FIRST_NAME],
+                "family": patient.LAST_NAME,
+            }
+        ],
+        "birthDate": str(patient.BIRTH_DATE),
+        "gender": patient.GENDER,
+        
     }
+
+    # Convert to regular dictionary if needed
+    return jsonify(fhir_patient)
+
+
+
+@app.route('/blood_tests/fhir/<int:patientID>', methods=['GET'])
+def get_blood_tests_fhir(patientID):
+    # Get the date parameter from the request, default to None if not provided
+    date_param = request.args.get('date', None)
+
+    # Query based on ID and optionally DATE
+    if date_param:
+        date_value = datetime.strptime(date_param, "%Y-%m-%d").date()
+        blood_tests = BloodIndicator.query.filter_by(patientID, date_value).all()
+    else:
+        blood_tests = BloodIndicator.query.filter_by(patientID).all()
+
     
-    return transform_to_fhir_blood_test(patient_data)
-
-
-
-# Sample FHIR data endpoint for blood test
-@app.route('/<int:patientID>/<date:date>/fhir')
-def get_blood_test_fhir_data(patientID):
-    
-    blood_test_data = {
+    blood_test_data = [
+    {
         'ID': BloodIndicator.ID,
         'DATE': BloodIndicator.DATE,
         'Albumin (g/dL)': BloodIndicator.Albumin_g_dL,
@@ -139,23 +160,33 @@ def get_blood_test_fhir_data(patientID):
         'Globulin (g/L)': BloodIndicator.Globulin_g_L,
         'Triglycerides (mg/dL)': BloodIndicator.Triglycerides_mg_dL,
         'Triglycerides (mmol/L)': BloodIndicator.Triglycerides_mmol_L
-}
+        }
+    for blood_test in blood_tests 
+    ]
+    
+    
 
-    return transform_to_fhir_blood_test(blood_test_data)
+    return jsonify([transform_to_fhir_blood_test(blood_test, patientID) for blood_test in blood_test_data])
+
+
+        
+   
+
 
 # base_url}/blood_tests/{patient_id}?date={date_param}
 # Sample FHIR data endpoint for blood test
-@app.route('/blood_tests/<int:patientID>', methods=['GET'])
-def get_blood_tests(patientID):
+@app.route('/blood_tests/raw/<int:patientID>', methods=['GET'])
+def get_blood_tests_raw(patientID):
     # Get the date parameter from the request, default to None if not provided
     date_param = request.args.get('date', None)
 
     # Query based on ID and optionally DATE
     if date_param:
         date_value = datetime.strptime(date_param, "%Y-%m-%d").date()
-        blood_tests = BloodIndicator.query.filter_by(ID=patientID, DATE=date_value).all()
+        blood_tests = BloodIndicator.query.filter(BloodIndicator.ID == patientID, BloodIndicator.DATE == date_value).all()
     else:
-        blood_tests = BloodIndicator.query.filter_by(ID=patientID).all()
+        blood_tests = BloodIndicator.query.filter(BloodIndicator.ID == patientID).all()
+
 
     
     blood_test_data = [
@@ -212,7 +243,7 @@ def get_blood_tests(patientID):
 
     
 
-def transform_to_fhir_blood_test(data, patient_reference="Patient/12345"):
+def transform_to_fhir_blood_test(data, patient_reference):
     fhir_observation = {
         "resourceType": "Observation",
         "status": "final",
@@ -273,25 +304,6 @@ def transform_to_fhir_blood_test(data, patient_reference="Patient/12345"):
     return json.dumps(fhir_observation, indent=2)
 
 
-
-
-def patient_to_fhir(patient):
-    # Create a FHIR Patient resource
-    fhir_patient = {
-        "resourceType": "Patient",
-        "id": str(patient.ID),
-        "name": [
-            {
-                "given": [patient.FIRST_NAME],
-                "family": patient.LAST_NAME,
-            }
-        ],
-        "birthDate": str(patient.BIRTH_DATE),
-        "gender": patient.GENDER,
-        # Add more attributes as needed
-    }
-
-    return jsonify(fhir_data)
 
 if __name__ == '__main__':
     app.run(debug=True)
