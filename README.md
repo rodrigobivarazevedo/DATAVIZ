@@ -19,3 +19,4 @@ The app provides raw json data or FHIR data via the routes:
 
 - / (Heatmap View from a specific blood test of a Patient)
   
+![Alt Text](heatmap.png)
