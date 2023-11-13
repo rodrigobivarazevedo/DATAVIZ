@@ -22,4 +22,4 @@ The app provides raw json data or FHIR data via the routes:
 - yellow = extreme close to outside range
 - green = normal range
   
-![Alt Text](heatmap2.png)
+![Alt Text](heatmap3.png)
