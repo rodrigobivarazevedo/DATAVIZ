@@ -19,7 +19,7 @@ The app provides raw json data or FHIR data via the routes:
 
 - / (Heatmap View from a specific blood test of a Patient)
 - red = outside normal range
-- yellow = extreme close to outside range
+- yellow = close to outside range
 - green = normal range
   
 ![Alt Text](heatmap3.png)
