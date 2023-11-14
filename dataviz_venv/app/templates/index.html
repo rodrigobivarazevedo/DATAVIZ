@@ -42,16 +42,15 @@
 </div>
 
 <div class="container mt-5">
-
     <div class="card">
         <div class="card-header">
             Blood Tests Information
         </div>
         <div class="card-body">
-            <form>
+            <form id="searchForm">
                 <div class="form-group">
-                    <label for="patientName">PatientID</label>
-                    <input type="text" class="form-control" id="patientName" placeholder="Enter patient ID">
+                    <label for="patientID">Patient ID</label>
+                    <input type="text" class="form-control" id="patientID" placeholder="Enter patient ID">
                 </div>
                 <div class="form-group">
                     <label for="dob">Effective Date</label>
@@ -60,17 +59,31 @@
                 <div class="form-group">
                     <label for="gender">Max Quantity</label>
                     <select class="form-control" id="gender">
-                        <option value="male">1</option>
-                        <option value="female">2</option>
-                        <option value="other">more</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="more">more</option>
                     </select>
                 </div>
-                <a class="btn btn-primary mt-3" href="/blood_tests/raw/3">Search</a>
+                <button type="button" class="btn btn-primary mt-3" onclick="searchBloodTests()">Search</button>
             </form>
         </div>
     </div>
-
 </div>
+
+<script>
+    function searchBloodTests() {
+        // Get values from form inputs
+        var patientId = document.getElementById('patientID').value;
+        var effectiveDate = document.getElementById('dob').value;
+        var maxQuantity = document.getElementById('gender').value;
+
+        // Construct the URL with the patient ID
+        var url = '/blood_tests/raw/' + patientId;
+
+        // Redirect to the URL
+        window.location.href = url;
+    }
+</script>
 
 
 <!-- Bootstrap JS and dependencies -->
