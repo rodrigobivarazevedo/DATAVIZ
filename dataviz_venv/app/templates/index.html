@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Medical App</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h1 class="mb-4">Medical App</h1>
+
+    <div class="card">
+        <div class="card-header">
+            Patient Information
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="form-group">
+                    <label for="patientName">Patient Name</label>
+                    <input type="text" class="form-control" id="patientName" placeholder="Enter patient name">
+                </div>
+                <div class="form-group">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" class="form-control" id="dob">
+                </div>
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select class="form-control" id="gender">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<div class="container mt-5">
+
+    <div class="card">
+        <div class="card-header">
+            Blood Tests Information
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="form-group">
+                    <label for="patientName">PatientID</label>
+                    <input type="text" class="form-control" id="patientName" placeholder="Enter patient name">
+                </div>
+                <div class="form-group">
+                    <label for="dob">Effective Date</label>
+                    <input type="date" class="form-control" id="dob">
+                </div>
+                <div class="form-group">
+                    <label for="gender">Max Quantity</label>
+                    <select class="form-control" id="gender">
+                        <option value="male">1</option>
+                        <option value="female">2</option>
+                        <option value="other">more</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

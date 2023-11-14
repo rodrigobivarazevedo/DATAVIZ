@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Indicator Heatmap</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+<body>
+
+<script>
+    // Sample data (replace this with your data)
+    var data = [
+        {
+            "Alanine aminotransferase ALT (U/L)": [20, "green"],
+            "Albumin (g/L)": [42, "green"],
+            "Albumin (g/dL)": [4.2, "green"],
+            // Add more data as needed
+        }
+        // Add more objects if you have multiple blood test instances
+    ];
+
+    // Set up SVG container
+    var width = 800;
+    var height = 400;
+    var margin = { top: 20, right: 20, bottom: 50, left: 60 };
+
+    var svg = d3.select("body")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // Create color scale
+    var colorScale = d3.scaleLinear()
+        .domain([0, 1])
+        .range(["red", "green"]);
+
+    // Draw heatmap rectangles
+    var cells = svg.selectAll("g")
+        .data(data)
+        .enter().append("g")
+        .selectAll("rect")
+        .data(d => Object.values(d))
+        .enter().append("rect")
+        .attr("x", function (d, i) { return i * (width / Object.keys(data[0]).length); })
+        .attr("y", function (d) { return 0; })
+        .attr("width", width / Object.keys(data[0]).length)
+        .attr("height", height)
+        .style("fill", function (d) { return colorScale(d[0] / 100); });
+
+    // Add text labels
+    var labels = svg.selectAll("text")
+        .data(Object.keys(data[0]))
+        .enter().append("text")
+        .attr("x", function (d, i) { return i * (width / Object.keys(data[0]).length) + (width / Object.keys(data[0]).length / 2); })
+        .attr("y", height + 30)
+        .style("text-anchor", "middle")
+        .text(function (d) { return d; });
+
+    // Add a title
+    svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", -margin.top / 2)
+        .attr("text-anchor", "middle")
+        .style("font-size", "18px")
+        .text("Blood Indicator Heatmap");
+</script>
+
+</body>
+</html>
+

@@ -1,9 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 import json
 from datetime import datetime
 import requests
-
+from collections import OrderedDict
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/rodrigo/repos/DATAVIZ_project/dataviz_venv/db/blood_tests.db'
@@ -20,7 +20,7 @@ class Patient(db.Model):
     
 class BloodIndicator(db.Model):
     __tablename__ = 'blood_indicators'
-    ID = db.Column(db.Integer)
+    ID = db.Column(db.Integer, primary_key=True)
     DATE = db.Column(db.Date)
     Albumin_g_dL = db.Column(db.Integer)
     Albumin_g_L = db.Column(db.Integer)
@@ -101,6 +101,7 @@ healthy_levels_young_adults = {
     "Triglycerides (mmol/L)": {"min": 0.34, "max": 1.69},
 }
 
+# fucntion to get the color correspondent to the blood indicator level
 def get_blood_level_color(indicator_name, level, reference_ranges):
     if indicator_name in reference_ranges:
         reference = reference_ranges[indicator_name]
@@ -130,6 +131,7 @@ def color_mapping(indicators_data, reference_ranges):
 
 # fucntion to tranform into FHIR format
 def transform_to_fhir_blood_test(data, patient_reference):
+    
     fhir_observation = {
         "resourceType": "Observation",
         "status": "final",
@@ -156,9 +158,9 @@ def transform_to_fhir_blood_test(data, patient_reference):
             "text": "Blood Panel"
         },
         "subject": {
-            "reference": patient_reference
+            "reference": f"Patient/{patient_reference}"
         },
-        "effectiveDateTime": datetime.now().isoformat(),
+        
         "component": []
     }
 
@@ -186,8 +188,14 @@ def transform_to_fhir_blood_test(data, patient_reference):
             }
         }
         fhir_observation["component"].append(component)
+        
+    # Convert the dictionary to an OrderedDict
+    return fhir_observation
 
-    return json.dumps(fhir_observation, indent=2)
+    
+
+
+    
 
 def determine_unit_and_code(test_name):
     # Add logic to determine the unit and unit code based on the test name
@@ -219,6 +227,15 @@ def determine_interpretation_code(color):
         return "unknown"
      
     
+
+@app.route("/")
+def patient_data():
+    return render_template("index.html")  
+
+@app.route("/views")
+def visualization():
+    return render_template("views.html") 
+    
 # Sample raw data endpoint for patient data
 @app.route('/<int:patientID>/raw', methods=['GET'])
 def get_patient_raw(patientID):
@@ -236,8 +253,9 @@ def get_patient_raw(patientID):
 
     return jsonify(patient_data)
 
+
 # Sample FHIR data endpoint for Patient data
-@app.route('/<int:patientID>/fhir')
+@app.route('/<int:patientID>/fhir', methods=['GET'])
 def get_patient_fhir(patientID):
     
     patient = Patient.query.get_or_404(patientID)
@@ -263,64 +281,12 @@ def get_patient_fhir(patientID):
 
 @app.route('/blood_tests/fhir/<int:patientID>', methods=['GET'])
 def get_blood_tests_fhir(patientID):
-    # Get the date parameter from the request, default to None if not provided
-    date_param = request.args.get('date', None)
-
-    # Query based on ID and optionally DATE
-    if date_param:
-        date_value = datetime.strptime(date_param, "%Y-%m-%d").date()
-        blood_tests = BloodIndicator.query.filter(BloodIndicator.ID == patientID, BloodIndicator.DATE == date_value).all()
-    else:
-        blood_tests = BloodIndicator.query.filter(BloodIndicator.ID == patientID).all()
-
-    # Process blood_tests as needed and return the raw data
-    blood_test_data = [
-        {
-            'ID': blood_test.ID,
-            'DATE': blood_test.DATE,
-            'Albumin (g/dL)': blood_test.Albumin_g_dL,
-            'Albumin (g/L)': blood_test.Albumin_g_L,
-            'Alanine aminotransferase ALT (U/L)': blood_test.Alanine_aminotransferase_ALT_U_L,
-            'Aspartate aminotransferase AST (U/L)': blood_test.Aspartate_aminotransferase_AST_U_L,
-            'Alkaline phosphatase (U/L)': blood_test.Alkaline_phosphatase_U_L,
-            'Blood urea nitrogen (mg/dL)': blood_test.Blood_urea_nitrogen_mg_dL,
-            'Blood urea nitrogen (mmol/L)': blood_test.Blood_urea_nitrogen_mmol_L,
-            'Total calcium (mg/dL)': blood_test.Total_calcium_mg_dL,
-            'Total calcium (mmol/L)': blood_test.Total_calcium_mmol_L,
-            'Creatine Phosphokinase (CPK) (IU/L)': blood_test.Creatine_Phosphokinase_CPK_IU_L,
-            'Cholesterol (mg/dL)': blood_test.Cholesterol_mg_dL,
-            'Cholesterol (mmol/L)': blood_test.Cholesterol_mmol_L,
-            'Bicarbonate (mmol/L)': blood_test.Bicarbonate_mmol_L,
-            'Creatinine (mg/dL)': blood_test.Creatinine_mg_dL,
-            'Creatinine (umol/L)': blood_test.Creatinine_umol_L,
-            'Gamma glutamyl transferase (U/L)': blood_test.Gamma_glutamyl_transferase_U_L,
-            'Glucose, serum (mg/dL)': blood_test.Glucose_serum_mg_dL,
-            'Glucose, serum (mmol/L)': blood_test.Glucose_serum_mmol_L,
-            'Iron, refrigerated (ug/dL)': blood_test.Iron_refrigerated_ug_dL,
-            'Iron, refrigerated (umol/L)': blood_test.Iron_refrigerated_umol_L,
-            'Lactate Dehydrogenase (U/L)': blood_test.Lactate_dehydrogenase_U_L,
-            'Phosphorus (mg/dL)': blood_test.Phosphorus_mg_dL,
-            'Phosphorus (mmol/L)': blood_test.Phosphorus_mmol_L,
-            'Total bilirubin (mg/dL)': blood_test.Total_bilirubin_mg_dL,
-            'Total bilirubin (umol/L)': blood_test.Total_bilirubin_umol_L,
-            'Total protein (g/dL)': blood_test.Total_protein_g_dL,
-            'Total protein (g/L)': blood_test.Total_protein_g_L,
-            'Uric acid (mg/dL)': blood_test.Uric_acid_mg_dL,
-            'Uric acid (umol/L)': blood_test.Uric_acid_umol_L,
-            'Sodium (mmol/L)': blood_test.Sodium_mmol_L,
-            'Potassium (mmol/L)': blood_test.Potassium_mmol_L,
-            'Chloride (mmol/L)': blood_test.Chloride_mmol_L,
-            'Osmolality (mmol/Kg)': blood_test.Osmolality_mmol_Kg,
-            'Globulin (g/dL)': blood_test.Globulin_g_dL,
-            'Globulin (g/L)': blood_test.Globulin_g_L,
-            'Triglycerides (mg/dL)': blood_test.Triglycerides_mg_dL,
-            'Triglycerides (mmol/L)': blood_test.Triglycerides_mmol_L
-        }
-        for blood_test in blood_tests
-    ]
     
-    colored_indicators = [color_mapping(blood_test, healthy_levels_young_adults) for blood_test in blood_test_data]
-    return jsonify([transform_to_fhir_blood_test(blood_test, patientID) for blood_test in colored_indicators])
+    # Process blood_tests as needed and return the raw data with colors
+    colored_blood_test_data = get_blood_tests_raw_data(patientID)
+    
+    # Transform each blood test data to FHIR format
+    return jsonify([transform_to_fhir_blood_test(blood_test, patientID) for blood_test in colored_blood_test_data])
 
 
         
@@ -331,6 +297,18 @@ def get_blood_tests_fhir(patientID):
 # Sample FHIR data endpoint for blood test
 @app.route('/blood_tests/raw/<int:patientID>', methods=['GET'])
 def get_blood_tests_raw(patientID):
+    return get_blood_tests_raw_data(patientID)
+    
+
+    
+
+
+
+
+
+
+
+def get_blood_tests_raw_data(patientID):
     # Get the date parameter from the request, default to None if not provided
     date_param = request.args.get('date', None)
 
@@ -340,12 +318,10 @@ def get_blood_tests_raw(patientID):
         blood_tests = BloodIndicator.query.filter(BloodIndicator.ID == patientID, BloodIndicator.DATE == date_value).all()
     else:
         blood_tests = BloodIndicator.query.filter(BloodIndicator.ID == patientID).all()
-    
-    # Process blood_tests as needed and return the raw data
-    blood_test_data = [
-        {
-            'ID': blood_test.ID,
-            'DATE': blood_test.DATE,
+        
+    blood_test_data = []
+    for blood_test in blood_tests:
+        blood_test_data.append({
             'Albumin (g/dL)': blood_test.Albumin_g_dL,
             'Albumin (g/L)': blood_test.Albumin_g_L,
             'Alanine aminotransferase ALT (U/L)': blood_test.Alanine_aminotransferase_ALT_U_L,
@@ -383,11 +359,14 @@ def get_blood_tests_raw(patientID):
             'Globulin (g/L)': blood_test.Globulin_g_L,
             'Triglycerides (mg/dL)': blood_test.Triglycerides_mg_dL,
             'Triglycerides (mmol/L)': blood_test.Triglycerides_mmol_L
-        }
-        for blood_test in blood_tests
-    ]
+        })
+        
     
-    return  jsonify([color_mapping(blood_test, healthy_levels_young_adults) for blood_test in blood_test_data])
+    
+    colored_blood_test_data = [color_mapping(blood_test, healthy_levels_young_adults) for blood_test in blood_test_data]
+
+    return colored_blood_test_data
+
 
 
 if __name__ == '__main__':
