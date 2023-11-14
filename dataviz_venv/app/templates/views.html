@@ -10,63 +10,104 @@
 <body>
 
 <script>
-    // Sample data (replace this with your data)
-    var data = [
-        {
-            "Alanine aminotransferase ALT (U/L)": [20, "green"],
-            "Albumin (g/L)": [42, "green"],
-            "Albumin (g/dL)": [4.2, "green"],
-            // Add more data as needed
-        }
-        // Add more objects if you have multiple blood test instances
-    ];
+    const data = {
+        'Albumin (g/dL)': [3.8, 'yellow'],
+        'Albumin (g/L)': [38.0, 'yellow'],
+        'Alanine aminotransferase ALT (U/L)': [14.0, 'green'],
+        'Aspartate aminotransferase AST (U/L)': [14.0, 'yellow'],
+        'Alkaline phosphatase (U/L)': [78.0, 'green'],
+        'Blood urea nitrogen (mg/dL)': [32.0, 'red'],
+        'Blood urea nitrogen (mmol/L)': [11.42, 'red'],
+        'Total calcium (mg/dL)': [9.1, 'green'],
+        'Total calcium (mmol/L)': [2.275, 'green'],
+        'Creatine Phosphokinase (CPK) (IU/L)': [47.0, 'yellow'],
+        'Cholesterol (mg/dL)': [86.0, 'red'],
+        'Cholesterol (mmol/L)': [2.224, 'red'],
+        'Bicarbonate (mmol/L)': [26.0, 'green'],
+        'Creatinine (mg/dL)': [1.46, 'red'],
+        'Creatinine (umol/L)': [129.06, 'red'],
+        'Gamma glutamyl transferase (U/L)': [9.0, 'yellow'],
+        'Glucose, serum (mg/dL)': [210.0, 'red'],
+        'Glucose, serum (mmol/L)': [11.66, 'red'],
+        'Iron, refrigerated (ug/dL)': [43.0, 'yellow'],
+        'Iron, refrigerated (umol/L)': [7.7, 'yellow'],
+        'Lactate Dehydrogenase (U/L)': [135.0, 'red'],
+        'Phosphorus (mg/dL)': [4.9, 'yellow'],
+        'Phosphorus (mmol/L)': [1.582, 'red'],
+        'Total bilirubin (mg/dL)': [0.7, 'green'],
+        'Total bilirubin (umol/L)': [11.97, 'green'],
+        'Total protein (g/dL)': [7.2, 'green'],
+        'Total protein (g/L)': [72.0, 'green'],
+        'Uric acid (mg/dL)': [7.0, 'yellow'],
+        'Uric acid (umol/L)': [416.4, 'yellow'],
+        'Sodium (mmol/L)': [138.0, 'green'],
+        'Potassium (mmol/L)': [4.3, 'green'],
+        'Chloride (mmol/L)': [104.0, 'yellow'],
+        'Osmolality (mmol/Kg)': [289.0, 'green'],
+        'Globulin (g/dL)': [3.4, 'yellow'],
+        'Globulin (g/L)': [34.0, 'yellow'],
+        'Triglycerides (mg/dL)': [122.0, 'green'],
+        'Triglycerides (mmol/L)': [1.377, 'green']
+    };
+    
+    // Convert data to suitable format
+    const dataArray = [];
+    for (const key in data) {
+        const [value, color] = data[key];
+        dataArray.push({ value, color, key });
+    }
+    
+    // Define margin and cell size
+    const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+    const cellSize = 20;
+    
+    // Create SVG element
+    const svg = d3.select('body').append('svg')
+        .attr('width', 600)
+        .attr('height', 400)
+        .style('margin', margin.top + 'px ' + margin.right + 'px ' + margin.bottom + 'px ' + margin.left + 'px');
+    
+    // Define color scale
+    const colorScale = d3.scaleOrdinal()
+        .domain(['green', 'yellow', 'red'])
+        .range(['#28a745', '#ffc107', '#dc3545']);
+    
+    // Define value scale
+    const valueScale = d3.scaleLinear()
+        .domain([0, d3.max(dataArray, d => d.value)])
+        .range([0, cellSize]);
+    
+    // Calculate x and y positions for each cell
+    const xPositions = d3.scaleBand()
+        .domain(dataArray.map(d => d.key))
+        .range([0, dataArray.length * cellSize]);
 
-    // Set up SVG container
-    var width = 800;
-    var height = 400;
-    var margin = { top: 20, right: 20, bottom: 50, left: 60 };
+    const yPositions = d3.scaleBand()
+        .domain(['value'])
+        .range([0, cellSize]);
 
-    var svg = d3.select("body")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    // Create color scale
-    var colorScale = d3.scaleLinear()
-        .domain([0, 1])
-        .range(["red", "green"]);
-
-    // Draw heatmap rectangles
-    var cells = svg.selectAll("g")
-        .data(data)
-        .enter().append("g")
-        .selectAll("rect")
-        .data(d => Object.values(d))
-        .enter().append("rect")
-        .attr("x", function (d, i) { return i * (width / Object.keys(data[0]).length); })
-        .attr("y", function (d) { return 0; })
-        .attr("width", width / Object.keys(data[0]).length)
-        .attr("height", height)
-        .style("fill", function (d) { return colorScale(d[0] / 100); });
-
-    // Add text labels
-    var labels = svg.selectAll("text")
-        .data(Object.keys(data[0]))
-        .enter().append("text")
-        .attr("x", function (d, i) { return i * (width / Object.keys(data[0]).length) + (width / Object.keys(data[0]).length / 2); })
-        .attr("y", height + 30)
-        .style("text-anchor", "middle")
-        .text(function (d) { return d; });
-
-    // Add a title
-    svg.append("text")
-        .attr("x", width / 2)
-        .attr("y", -margin.top / 2)
-        .attr("text-anchor", "middle")
-        .style("font-size", "18px")
-        .text("Blood Indicator Heatmap");
+    // Draw cells
+    svg.selectAll('rect')
+        .data(dataArray)
+        .enter().append('rect')
+        .attr('x', d => xPositions(d.key))
+        .attr('y', margin.top)
+        .attr('width', cellSize)
+        .attr('height', cellSize)
+        .style('fill', d => colorScale(d.color))
+        .style('opacity', d => valueScale(d.value) / cellSize);
+    
+    // Add labels
+    svg.selectAll('text')
+        .data(dataArray)
+        .enter().append('text')
+        .attr('x', d => xPositions(d.key) + cellSize / 2)
+        .attr('y', margin.top + cellSize / 2)
+        .attr('dy', '0.35em')
+        .style('text-anchor', 'middle')
+        .style('alignment-baseline', 'middle')
+        .style('fill', 'black')
+        .text(d => d.value);
 </script>
 
 </body>

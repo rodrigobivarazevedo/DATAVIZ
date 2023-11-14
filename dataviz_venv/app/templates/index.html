@@ -10,7 +10,7 @@
 <body>
 
 <div class="container mt-5">
-    <h1 class="mb-4">Medical App</h1>
+    <h1 class="mb-4">Blood Tests Visualization App</h1>
 
     <div class="card">
         <div class="card-header">
@@ -34,7 +34,7 @@
                         <option value="other">Other</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <a class="btn btn-primary mt-3" href="/3/fhir">Search</a>
             </form>
         </div>
     </div>
@@ -51,7 +51,7 @@
             <form>
                 <div class="form-group">
                     <label for="patientName">PatientID</label>
-                    <input type="text" class="form-control" id="patientName" placeholder="Enter patient name">
+                    <input type="text" class="form-control" id="patientName" placeholder="Enter patient ID">
                 </div>
                 <div class="form-group">
                     <label for="dob">Effective Date</label>
@@ -65,7 +65,7 @@
                         <option value="other">more</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <a class="btn btn-primary mt-3" href="/blood_tests/raw/3">Search</a>
             </form>
         </div>
     </div>
