@@ -1,5 +1,5 @@
 # Exclude directories
-__pycache__
+
 dataviz_venv
 etc/jupyter
 share
