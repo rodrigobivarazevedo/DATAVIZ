@@ -3,7 +3,7 @@
     "image": "python:3.10.10",
   
     // Use the Dockerfile in this folder for building the container.
-    "dockerFile": "Dockerfile",
+    "dockerFile": "DOCKERFILE",
   
     // Add extensions to install inside the container.
     "extensions": [
