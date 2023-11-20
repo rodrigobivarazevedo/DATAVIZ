@@ -101,7 +101,7 @@ healthy_levels_young_adults = {
     "Triglycerides (mmol/L)": {"min": 0.34, "max": 1.69},
 }
 
-# fucntion to get the color correspondent to the blood indicator level
+# function to get the color correspondent to the blood indicator level
 def get_blood_level_color(indicator_name, level, reference_ranges):
     if indicator_name in reference_ranges:
         reference = reference_ranges[indicator_name]
@@ -290,9 +290,6 @@ def get_blood_tests_fhir(patientID):
 
 
         
-   
-
-
 # base_url}/blood_tests/{patient_id}?date={date_param}
 # Sample FHIR data endpoint for blood test
 @app.route('/blood_tests/raw/<int:patientID>', methods=['GET'])
@@ -301,6 +298,8 @@ def get_blood_tests_raw(patientID):
     
 
     
+    
+
 def get_blood_tests_raw_data(patientID):
     # Get the date parameter from the request, default to None if not provided
     date_param = request.args.get('date', None)
