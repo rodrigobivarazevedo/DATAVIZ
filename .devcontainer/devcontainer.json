@@ -1,0 +1,24 @@
+{
+    "name": "Flask-Dev-Container",
+    "image": "python:3.10.10",
+  
+    // Use the Dockerfile in this folder for building the container.
+    "dockerFile": "Dockerfile",
+  
+    // Add extensions to install inside the container.
+    "extensions": [
+      "ms-python.python"
+    ],
+  
+    // Use the non-root user by default inside the container.
+    "settings": {
+      "terminal.integrated.shell.linux": "/bin/sh"
+    },
+  
+    // Set up port forwarding.
+    "forwardPorts": [5000],
+  
+    // Uncomment to use postCreateCommand after container creation.
+    // "postCreateCommand": "pip install -r requirements-dev.txt && echo 'Post create command'"
+  }
+  
