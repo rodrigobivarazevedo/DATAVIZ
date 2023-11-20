@@ -1,90 +1,181 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Medical App</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<meta charset="utf-8">
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v6.js"></script>
+
 </head>
 <body>
-
 <div class="container mt-5">
     <h1 class="mb-4">Blood Tests Visualization App</h1>
 
-    <div class="card">
-        <div class="card-header">
-            Patient Information
+    <div class="row">
+        <!-- First Card -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    Patient Information
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="patientName">Patient Name</label>
+                            <input type="text" class="form-control" id="patientName" placeholder="Enter patient name">
+                        </div>
+                        <div class="form-group">
+                            <label for="dob">Date of Birth</label>
+                            <input type="date" class="form-control" id="dob">
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">Gender</label>
+                            <select class="form-control" id="gender">
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <a class="btn btn-primary mt-3" href="/3/fhir">Search</a>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <form>
-                <div class="form-group">
-                    <label for="patientName">Patient Name</label>
-                    <input type="text" class="form-control" id="patientName" placeholder="Enter patient name">
+
+        <!-- Second Card -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    Blood Tests Information
                 </div>
-                <div class="form-group">
-                    <label for="dob">Date of Birth</label>
-                    <input type="date" class="form-control" id="dob">
+                <div class="card-body">
+                    <form id="searchForm">
+                        <div class="form-group">
+                            <label for="patientID">Patient ID</label>
+                            <input type="text" class="form-control" id="patientID" placeholder="Enter patient ID">
+                        </div>
+                        <div class="form-group">
+                            <label for="date">Effective Date</label>
+                            <input type="date" class="form-control" id="date">
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity">Max Quantity</label>
+                            <select class="form-control" id="Quantity">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="more">more</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary mt-3" onclick="searchBloodTests()">Search</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label for="gender">Gender</label>
-                    <select class="form-control" id="gender">
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <a class="btn btn-primary mt-3" href="/3/fhir">Search</a>
-            </form>
+            </div>
         </div>
     </div>
-
 </div>
-
-<div class="container mt-5">
-    <div class="card">
-        <div class="card-header">
-            Blood Tests Information
-        </div>
-        <div class="card-body">
-            <form id="searchForm">
-                <div class="form-group">
-                    <label for="patientID">Patient ID</label>
-                    <input type="text" class="form-control" id="patientID" placeholder="Enter patient ID">
-                </div>
-                <div class="form-group">
-                    <label for="dob">Effective Date</label>
-                    <input type="date" class="form-control" id="dob">
-                </div>
-                <div class="form-group">
-                    <label for="gender">Max Quantity</label>
-                    <select class="form-control" id="gender">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="more">more</option>
-                    </select>
-                </div>
-                <button type="button" class="btn btn-primary mt-3" onclick="searchBloodTests()">Search</button>
-            </form>
-        </div>
-    </div>
-</div>
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
 
 <script>
     function searchBloodTests() {
         // Get values from form inputs
-        var patientId = document.getElementById('patientID').value;
-        var effectiveDate = document.getElementById('dob').value;
-        var maxQuantity = document.getElementById('gender').value;
+        var patientID = document.getElementById('patientID').value;
+        var effectiveDate = document.getElementById('date').value;
+        var maxQuantity = document.getElementById('Quantity').value;
+    
+    // Use JavaScript to fetch data from the Flask route
+    
+    const url = `/blood_tests/raw/${patientID}`;
 
-        // Construct the URL with the patient ID
-        var url = '/blood_tests/raw/' + patientId;
+    fetch(url)
+        .then(response => response.json())
+        .then(data => 
+        {
+         
+            // Convert data to suitable format
+            const dataArray = [];
+            for (const key in data) {
+                const [value, color] = data[key];
+                dataArray.push({ value, color, key });
+            }
+        
+            // Define margin and cell size
+            const margin = { top: 20, right: 250, bottom: 20, left: 260 };
+            const cellSize = 30;
+            const cellWidth = 200; // Adjusted cell width for larger color blocks
+            const cellHeight = 30; // Height of each cell
+        
+            // Create SVG element
+            const svg = d3.select('#my_dataviz').append('svg')
+                .attr('width', 800)
+                .attr('height', dataArray.length * cellHeight + margin.top + margin.bottom)
+                .style('margin', margin.top + 'px ' + margin.right + 'px ' + margin.bottom + 'px ' + margin.left + 'px');
+        
+            // Define color scale based on color strings
+            const colorScale = d3.scaleOrdinal()
+                .domain(['green', 'yellow', 'red'])
+                .range(['green', 'yellow', 'red']);
+        
+            // Draw cells
+            svg.selectAll('rect')
+                .data(dataArray)
+                .enter().append('rect')
+                .attr('x', margin.left)
+                .attr('y', (d, i) => margin.top + i * cellHeight)
+                .attr('width', cellWidth)
+                .attr('height', cellHeight)
+                .style('fill', d => colorScale(d.color))
+                .on('mouseover', function (event, d) {
+                    // Display blood level on mouse hover
+                    d3.select(this).append('title').text(`Blood Level: ${d.value}`);
+                });
+        
+            // Add y-axis labels with word wrapping
+            svg.selectAll('text')
+                .data(dataArray)
+                .enter().append('text')
+                .attr('x', margin.left - 10)
+                .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
+                .attr('dy', '0.35em')
+                .style('text-anchor', 'end')
+                .style('alignment-baseline', 'middle')
+                .style('fill', 'black')
+                .text(function (d) {
+                    // Split and wrap text to fit in the available space
+                    const words = d.key.split(/\s+/);
+                    let line = '';
+                    const lines = [];
+                    const lineHeight = 1.1; // ems
+        
+                    for (const word of words) {
+                        const testLine = line.length === 0 ? word : `${line} ${word}`;
+                        const metrics = this.getComputedTextLength();
+                        if (metrics > margin.left - 10 && line.length > 0) {
+                            lines.push(line);
+                            line = word;
+                        } else {
+                            line = testLine;
+                        }
+                    }
+        
+                    lines.push(line);
+                    return lines.join('\n');
+                });
+        
+            // Draw black lines between cells
+            svg.selectAll('line')
+                .data(dataArray)
+                .enter().append('line')
+                .attr('x1', margin.left)
+                .attr('x2', margin.left + cellWidth)
+                .attr('y1', (d, i) => margin.top + (i + 1) * cellHeight)
+                .attr('y2', (d, i) => margin.top + (i + 1) * cellHeight)
+                .style('stroke', 'black');
 
-        // Redirect to the URL
-        window.location.href = url;
-    }
+                
+
+            })
+            .catch(error => console.error('Error fetching data:', error));
+        }
 </script>
-
 
 <!-- Bootstrap JS and dependencies -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

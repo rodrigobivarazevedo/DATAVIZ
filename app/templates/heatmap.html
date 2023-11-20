@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v6.js"></script>
+
+</head>
+<body>
 
 <!-- Create a div where the graph will take place -->
 <div id="my_dataviz"></div>
@@ -48,7 +50,8 @@
         'Triglycerides (mmol/L)': [1.377, 'green']
     };
 
-     // Convert data to suitable format
+         
+    // Convert data to suitable format
     const dataArray = [];
     for (const key in data) {
         const [value, color] = data[key];
@@ -56,7 +59,7 @@
     }
 
     // Define margin and cell size
-    const margin = { top: 20, right: 250, bottom: 20, left: 260 };
+    const margin = { top: 20, right: 250, bottom: 20, left: 275 };
     const cellSize = 30;
     const cellWidth = 200; // Adjusted cell width for larger color blocks
     const cellHeight = 30; // Height of each cell
@@ -127,4 +130,12 @@
         .attr('y1', (d, i) => margin.top + (i + 1) * cellHeight)
         .attr('y2', (d, i) => margin.top + (i + 1) * cellHeight)
         .style('stroke', 'black');
+
+        
+
+        
 </script>
+
+</body>
+</html>
+

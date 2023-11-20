@@ -232,9 +232,9 @@ def determine_interpretation_code(color):
 def patient_data():
     return render_template("index.html")  
 
-@app.route("/views")
+@app.route("/heatmap")
 def visualization():
-    return render_template("views.html") 
+    return render_template("heatmap.html") 
     
 # Sample raw data endpoint for patient data
 @app.route('/<int:patientID>/raw', methods=['GET'])
@@ -297,17 +297,10 @@ def get_blood_tests_fhir(patientID):
 # Sample FHIR data endpoint for blood test
 @app.route('/blood_tests/raw/<int:patientID>', methods=['GET'])
 def get_blood_tests_raw(patientID):
-    return get_blood_tests_raw_data(patientID)
+    return jsonify(get_blood_tests_raw_data(patientID))
     
 
     
-
-
-
-
-
-
-
 def get_blood_tests_raw_data(patientID):
     # Get the date parameter from the request, default to None if not provided
     date_param = request.args.get('date', None)
