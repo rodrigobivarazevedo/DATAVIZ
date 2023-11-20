@@ -6,7 +6,7 @@ import requests
 from collections import OrderedDict
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/rodrigo/repos/DATAVIZ_project/dataviz_venv/db/blood_tests.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db'
 db = SQLAlchemy(app)
 
 class Patient(db.Model):
