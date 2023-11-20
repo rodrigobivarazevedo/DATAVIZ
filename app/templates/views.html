@@ -49,70 +49,82 @@
     };
 
      // Convert data to suitable format
-     const dataArray = [];
-     for (const key in data) {
-         const [value, color] = data[key];
-         dataArray.push({ value, color, key });
-     }
- 
-     // Define margin and cell size
-     const margin = { top: 20, right: 20, bottom: 30, left: 275 };
-     const cellSize = 30;
- 
-     // Create SVG element
-     const svg = d3.select('#my_dataviz').append('svg')
-         .attr('width', 800)
-         .attr('height', dataArray.length * cellSize + margin.top + margin.bottom)
-         .style('margin', margin.top + 'px ' + margin.right + 'px ' + margin.bottom + 'px ' + margin.left + 'px');
- 
-     // Define color scale based on color strings
-     const colorScale = d3.scaleOrdinal()
-         .domain(['green', 'yellow', 'red'])
-         .range(['green', 'yellow', 'red']);
- 
-     // Draw cells
-     svg.selectAll('rect')
-         .data(dataArray)
-         .enter().append('rect')
-         .attr('x', margin.left)
-         .attr('y', (d, i) => margin.top + i * cellSize)
-         .attr('width', cellSize)
-         .attr('height', cellSize)
-         .style('fill', d => colorScale(d.color))
-         .on('mouseover', function (event, d) {
-             // Display blood level on mouse hover
-             d3.select(this).append('title').text(`Blood Level: ${d.value}`);
-         });
- 
-     // Add y-axis labels with word wrapping
-     svg.selectAll('text')
-         .data(dataArray)
-         .enter().append('text')
-         .attr('x', margin.left - 10)
-         .attr('y', (d, i) => margin.top + i * cellSize + cellSize / 2)
-         .attr('dy', '0.35em')
-         .style('text-anchor', 'end')
-         .style('alignment-baseline', 'middle')
-         .style('fill', 'black')
-         .text(function (d) {
-             // Split and wrap text to fit in the available space
-             const words = d.key.split(/\s+/);
-             let line = '';
-             const lines = [];
-             const lineHeight = 1.1; // ems
- 
-             for (const word of words) {
-                 const testLine = line.length === 0 ? word : `${line} ${word}`;
-                 const metrics = this.getComputedTextLength();
-                 if (metrics > margin.left - 10 && line.length > 0) {
-                     lines.push(line);
-                     line = word;
-                 } else {
-                     line = testLine;
-                 }
-             }
- 
-             lines.push(line);
-             return lines.join('\n');
-         });
- </script>
+    const dataArray = [];
+    for (const key in data) {
+        const [value, color] = data[key];
+        dataArray.push({ value, color, key });
+    }
+
+    // Define margin and cell size
+    const margin = { top: 20, right: 200, bottom: 30, left: 275 };
+    const cellSize = 30;
+    const cellWidth = 200; // Adjusted cell width for larger color blocks
+    const cellHeight = 30; // Height of each cell
+
+    // Create SVG element
+    const svg = d3.select('#my_dataviz').append('svg')
+        .attr('width', 800)
+        .attr('height', dataArray.length * cellHeight + margin.top + margin.bottom)
+        .style('margin', margin.top + 'px ' + margin.right + 'px ' + margin.bottom + 'px ' + margin.left + 'px');
+
+    // Define color scale based on color strings
+    const colorScale = d3.scaleOrdinal()
+        .domain(['green', 'yellow', 'red'])
+        .range(['green', 'yellow', 'red']);
+
+    // Draw cells
+    svg.selectAll('rect')
+        .data(dataArray)
+        .enter().append('rect')
+        .attr('x', margin.left)
+        .attr('y', (d, i) => margin.top + i * cellHeight)
+        .attr('width', cellWidth)
+        .attr('height', cellHeight)
+        .style('fill', d => colorScale(d.color))
+        .on('mouseover', function (event, d) {
+            // Display blood level on mouse hover
+            d3.select(this).append('title').text(`Blood Level: ${d.value}`);
+        });
+
+    // Add y-axis labels with word wrapping
+    svg.selectAll('text')
+        .data(dataArray)
+        .enter().append('text')
+        .attr('x', margin.left - 10)
+        .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
+        .attr('dy', '0.35em')
+        .style('text-anchor', 'end')
+        .style('alignment-baseline', 'middle')
+        .style('fill', 'black')
+        .text(function (d) {
+            // Split and wrap text to fit in the available space
+            const words = d.key.split(/\s+/);
+            let line = '';
+            const lines = [];
+            const lineHeight = 1.1; // ems
+
+            for (const word of words) {
+                const testLine = line.length === 0 ? word : `${line} ${word}`;
+                const metrics = this.getComputedTextLength();
+                if (metrics > margin.left - 10 && line.length > 0) {
+                    lines.push(line);
+                    line = word;
+                } else {
+                    line = testLine;
+                }
+            }
+
+            lines.push(line);
+            return lines.join('\n');
+        });
+
+    // Draw black lines between cells
+    svg.selectAll('line')
+        .data(dataArray)
+        .enter().append('line')
+        .attr('x1', margin.left)
+        .attr('x2', margin.left + cellWidth)
+        .attr('y1', (d, i) => margin.top + (i + 1) * cellHeight)
+        .attr('y2', (d, i) => margin.top + (i + 1) * cellHeight)
+        .style('stroke', 'black');
+</script>
