@@ -17,10 +17,12 @@
                     Patient Information
                 </div>
                 <div class="card-body">
-                    <form>
+                    <form id="patientInfoForm" onsubmit="return false;">
+                        <!-- Prevents default form submission -->
                         <div class="form-group">
                             <label for="patientName">Patient Name</label>
-                            <input type="text" class="form-control" id="patientName" placeholder="Enter patient name">
+                            <input type="text" class="form-control" id="patientName"
+                                placeholder="Enter patient name">
                         </div>
                         <div class="form-group">
                             <label for="dob">Date of Birth</label>
@@ -34,23 +36,27 @@
                                 <option value="other">Other</option>
                             </select>
                         </div>
-                        <a class="btn btn-primary mt-3" href="/3/fhir">Search</a>
+                        <button type="submit" class="btn btn-primary mt-3" onclick="searchPatient()">Search</button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Second Card -->
+
+        
+         <!-- Second Card -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
                     Blood Tests Information
                 </div>
                 <div class="card-body">
-                    <form id="searchForm">
+                    <form id="searchForm" onsubmit="searchBloodTests(); return false;">
+                        <!-- Prevents default form submission -->
                         <div class="form-group">
                             <label for="patientID">Patient ID</label>
-                            <input type="text" class="form-control" id="patientID" name="patientID" placeholder="Enter patient ID">
+                            <input type="text" class="form-control" id="patientID" name="patientID"
+                                placeholder="Enter patient ID">
                         </div>
                         <div class="form-group">
                             <label for="date">Effective Date</label>
@@ -64,7 +70,7 @@
                                 <option value="more">more</option>
                             </select>
                         </div>
-                        <button type="button" class="btn btn-primary mt-3" onclick="searchBloodTests()">Search</button>
+                        <button type="submit" class="btn btn-primary mt-3">Search</button>
                     </form>
                 </div>
             </div>
@@ -76,6 +82,10 @@
 
 <script>
     function searchBloodTests() {
+
+        // Remove existing SVG element
+        d3.select('#my_dataviz').selectAll('*').remove();
+
         // Get values from form inputs
         var patientID = document.getElementById('patientID').value;
         var effectiveDate = document.getElementById('date').value;
