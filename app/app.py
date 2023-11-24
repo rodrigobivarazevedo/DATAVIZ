@@ -251,7 +251,7 @@ def get_patient_raw(patientID):
         'gender': patient.GENDER,
     }
 
-    return jsonify(patient_data)
+    return patient_data
 
 
 # Sample FHIR data endpoint for Patient data
@@ -275,7 +275,7 @@ def get_patient_fhir(patientID):
     }
 
     # Convert to regular dictionary if needed
-    return jsonify(fhir_patient)
+    return fhir_patient
 
 
 
@@ -286,7 +286,7 @@ def get_blood_tests_fhir(patientID):
     colored_blood_test_data = get_blood_tests_raw_data(patientID)
     
     # Transform each blood test data to FHIR format
-    return jsonify([transform_to_fhir_blood_test(blood_test, patientID) for blood_test in colored_blood_test_data])
+    return [transform_to_fhir_blood_test(blood_test, patientID) for blood_test in colored_blood_test_data]
 
 
         
@@ -294,7 +294,7 @@ def get_blood_tests_fhir(patientID):
 # Sample FHIR data endpoint for blood test
 @app.route('/blood_tests/raw/<int:patientID>', methods=['GET'])
 def get_blood_tests_raw(patientID):
-    return jsonify(get_blood_tests_raw_data(patientID))
+    return get_blood_tests_raw_data(patientID)
     
 
     
