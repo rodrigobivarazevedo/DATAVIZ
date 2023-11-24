@@ -192,10 +192,6 @@ def transform_to_fhir_blood_test(data, patient_reference):
     # Convert the dictionary to an OrderedDict
     return fhir_observation
 
-    
-
-
-    
 
 def determine_unit_and_code(test_name):
     # Add logic to determine the unit and unit code based on the test name
@@ -237,7 +233,7 @@ def visualization():
     return render_template("heatmap.html") 
     
 # Sample raw data endpoint for patient data
-@app.route('/<int:patientID>/raw', methods=['GET'])
+@app.route('/<int:patientID>/raw', methods=["POST"])
 def get_patient_raw(patientID):
     # Get patient information from the database
     patient = Patient.query.get_or_404(patientID)
@@ -251,11 +247,11 @@ def get_patient_raw(patientID):
         'gender': patient.GENDER,
     }
 
-    return patient_data
+    return jsonify(patient_data)
 
 
 # Sample FHIR data endpoint for Patient data
-@app.route('/<int:patientID>/fhir', methods=['GET'])
+@app.route('/<int:patientID>/fhir', methods=["POST"])
 def get_patient_fhir(patientID):
     
     patient = Patient.query.get_or_404(patientID)

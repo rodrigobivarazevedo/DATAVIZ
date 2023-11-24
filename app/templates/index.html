@@ -17,26 +17,16 @@
                     Patient Information
                 </div>
                 <div class="card-body">
-                    <form id="patientInfoForm" onsubmit="return false;">
+                    <div id="patientInfo"></div>
+                    
+                    <!-- Add padding to the top of the form -->
+                    <form id="patientInfoForm" onsubmit="searchPatient(); return false;" method="post" style="padding-top: 20px;">
                         <!-- Prevents default form submission -->
                         <div class="form-group">
-                            <label for="patientName">Patient Name</label>
-                            <input type="text" class="form-control" id="patientName"
-                                placeholder="Enter patient name">
+                            <label for="patientID">Patient ID</label>
+                            <input type="text" class="form-control" id="patientID" name="patientID" placeholder="Enter patient ID">
                         </div>
-                        <div class="form-group">
-                            <label for="dob">Date of Birth</label>
-                            <input type="date" class="form-control" id="dob">
-                        </div>
-                        <div class="form-group">
-                            <label for="gender">Gender</label>
-                            <select class="form-control" id="gender">
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary mt-3" onclick="searchPatient()">Search</button>
+                        <button type="submit" class="btn btn-primary mt-3">Search</button>
                     </form>
                 </div>
             </div>
@@ -78,13 +68,56 @@
     </div>
 </div>
 <!-- Create a div where the graph will take place -->
-<div id="my_dataviz"></div>
+<div id="heatmap"></div>
 
 <script>
+    function searchPatient() {
+        // Get values from form inputs
+        var patientID = document.getElementById('patientID').value;
+    
+        // Use JavaScript to fetch data from the Flask route
+        const url = `/${patientID}/raw`;
+    
+        fetch(url, {
+            method: 'POST', // Use POST method
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+    
+                // Construct HTML to display patient information
+                const patientInfoHtml = `
+                    <p><strong>Patient ID:</strong> ${data.patientID}</p>
+                    <p><strong>First Name:</strong> ${data.first_name}</p>
+                    <p><strong>Last Name:</strong> ${data.last_name}</p>
+                    <p><strong>Birth Date:</strong> ${data.birth_date}</p>
+                    <p><strong>Gender:</strong> ${data.gender}</p>
+                `;
+    
+                // Display patient information in the HTML
+                document.getElementById('patientInfo').innerHTML = patientInfoHtml;
+            })
+            .catch(error => {
+                console.error('Error fetching patient data:', error);
+                // Add error handling here, e.g., display an error message to the user
+            });
+    }
+    
+    // Trigger the searchPatient function when the Enter key is pressed
+    document.getElementById('patientInfoForm').addEventListener('submit', function (event) {
+        searchPatient();
+    });
+    
+
     function searchBloodTests() {
 
         // Remove existing SVG element
-        d3.select('#my_dataviz').selectAll('*').remove();
+        d3.select('#heatmap').selectAll('*').remove();
 
         // Get values from form inputs
         var patientID = document.getElementById('patientID').value;
@@ -119,7 +152,7 @@
                 const cellHeight = 30;
     
                 // Create SVG element
-                const svg = d3.select('#my_dataviz').append('svg')
+                const svg = d3.select('#heatmap').append('svg')
                     .attr('width', 800)
                     .attr('height', dataArray.length * cellHeight + margin.top + margin.bottom)
                     .style('margin', margin.top + 'px ' + margin.right + 'px ' + margin.bottom + 'px ' + margin.left + 'px');
@@ -127,7 +160,7 @@
                 // Define color scale based on color strings
                 const colorScale = d3.scaleOrdinal()
                     .domain(['green', 'yellow', 'red'])
-                    .range(['green', 'yellow', 'red']);
+                    .range(['green', '#ffd800', '#c80815']);
             
                 // Draw cells
                 svg.selectAll('rect')
@@ -190,6 +223,7 @@
             // Add error handling here, e.g., display an error message to the user
         });
 }
+
 </script>
 
 <!-- Bootstrap JS and dependencies -->
