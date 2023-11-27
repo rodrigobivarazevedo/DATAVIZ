@@ -52,13 +52,9 @@
                             <label for="date">Effective Date</label>
                             <input type="date" class="form-control" id="date" name="date">
                         </div>
-                        <div class="form-group">
-                            <label for="quantity">Max Quantity</label>
-                            <select class="form-control" id="Quantity" name="quantity">
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="more">more</option>
-                            </select>
+                        <div>
+                            <label for="blood_test_dates">Blood Tests Dates</label>
+                            <ul></ul>
                         </div>
                         <button type="submit" class="btn btn-primary mt-3">Search</button>
                     </form>
@@ -71,6 +67,21 @@
 <div id="heatmap"></div>
 
 <script>
+
+    let input = document.getElementById('patientID');
+    input.addEventListener('input', async function () {
+        let response = await fetch('/dates?q=' + input.value);
+        let dates = await response.json();
+        let html = '';
+        for (let date of dates) {
+            html += '<li>' + date.DATE + '</li>';
+        }
+        document.querySelector('ul').innerHTML = html;
+    });
+
+
+
+
     function searchPatient() {
         // Get values from form inputs
         var patientID = document.getElementById('patientIDPatientInfo').value;
@@ -93,7 +104,7 @@
                 // Check if data is not an empty list
                 if (data.length > 0) {
                     const patientInfo = data[0]; // Assuming there's only one element in the list
-    
+
                     // Construct HTML to display patient information
                     const patientInfoHtml = `
                         <p><strong>Patient ID:</strong> ${patientInfo.ID}</p>
@@ -128,7 +139,7 @@
         var maxQuantity = document.getElementById('Quantity').value;
     
         // Use JavaScript to fetch data from the Flask route
-        const url = `/blood_tests/raw/${blood_test_patientID}?date=${effectiveDate}`;
+        const url = `/blood_tests/raw/?ID=${blood_test_patientID}?date=${effectiveDate}`;
     
         fetch(url)
             .then(response => {

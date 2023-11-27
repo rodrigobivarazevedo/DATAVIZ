@@ -184,9 +184,7 @@ def visualization():
 def get_patient_raw(patientID):
     # Get patient information from the database
     patient_data = db.execute("SELECT * FROM patients WHERE ID = ?", patientID)
-    print(patient_data)
-    return patient_data
-
+    return patient_data 
 
 # Sample FHIR data endpoint for Patient data
 @app2.route('/<int:patientID>/fhir', methods=["POST"])
@@ -213,9 +211,6 @@ def get_patient_fhir(patientID):
 
 
 
-
-
-
 @app2.route('/blood_tests/fhir/<int:patientID>', methods=['GET'])
 def get_blood_tests_fhir(patientID):
     # Build the URL for the raw data endpoint
@@ -234,16 +229,30 @@ def get_blood_tests_fhir(patientID):
         # Handle the case where the raw data request fails
         return "Failed to retrieve raw blood test data.", response.status_code
 
-
+@app2.route("/dates")
+def dates():
+    q = request.args.get("q")
+    if q:
+        dates = db.execute("SELECT DATE FROM blood_indicators WHERE ID = ?", q)
+    else:
+        dates = []
+    return dates
+    
         
 # base_url}/blood_tests/{patient_id}?date={date_param}
 # Sample FHIR data endpoint for blood test
 @app2.route('/blood_tests/raw/<int:patientID>', methods=['GET'])
 def get_blood_tests_raw(patientID):
     
-    date_param = request.args.get('date', None)
-    blood_tests = db.execute("SELECT * FROM blood_indicators WHERE ID = ?", patientID)  
-    
+    date_param = request.form.get('date', None)
+    date_param = request.form.get('date', None)
+    if date_param:
+        blood_tests = db.execute("SELECT * FROM blood_indicators WHERE ID = ? AND DATE = ?", (patientID, date_param))
+        print(blood_tests)
+    else:
+        blood_tests = db.execute("SELECT * FROM blood_indicators WHERE ID = ?", (patientID,))
+  
+    print(blood_tests)
     formated_blood_tests = []
     for blood_test in blood_tests:
         formated_blood_tests.append({
@@ -286,6 +295,8 @@ def get_blood_tests_raw(patientID):
             'Triglycerides (mg/dL)': blood_test['Triglycerides_mg_dL'],
             'Triglycerides (mmol/L)': blood_test['Triglycerides_mmol_L']
         })
+        
+    
               
     colored_blood_test_data = [color_mapping(blood_test, healthy_levels_young_adults) for blood_test in formated_blood_tests]
 
