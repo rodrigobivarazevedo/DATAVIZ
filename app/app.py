@@ -308,10 +308,10 @@ def get_blood_tests_raw(patientID):
         date_value = datetime.strptime(date_param, "%Y-%m-%d").date()
         blood_tests = BloodIndicator.query.filter(BloodIndicator.ID == patientID, BloodIndicator.DATE == date_value).all()
     else:
-        query = BloodIndicator.query.filter(BloodIndicator.ID == patientID)
-        print(query)
         blood_tests = BloodIndicator.query.filter(BloodIndicator.ID == patientID).all()
-    
+    for blood_test in blood_tests:
+        print(f'ID: {blood_test.ID}')
+        print(f'DATE: {blood_test.DATE}')
     blood_test_data = []
     for blood_test in blood_tests:
         blood_test_data.append({

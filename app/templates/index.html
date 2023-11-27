@@ -23,8 +23,8 @@
                     <form id="patientInfoForm" onsubmit="searchPatient(); return false;" method="post" style="padding-top: 20px;">
                         <!-- Prevents default form submission -->
                         <div class="form-group">
-                            <label for="patientID">Patient ID</label>
-                            <input type="text" class="form-control" id="patientID" name="patientID" placeholder="Enter patient ID">
+                            <label for="patientIDPatientInfo">Patient ID</label>
+                            <input type="text" class="form-control" id="patientIDPatientInfo" name="patientIDPatientInfo" placeholder="Enter patient ID">
                         </div>
                         <button type="submit" class="btn btn-primary mt-3">Search</button>
                     </form>
@@ -73,7 +73,7 @@
 <script>
     function searchPatient() {
         // Get values from form inputs
-        var patientID = document.getElementById('patientID').value;
+        var patientID = document.getElementById('patientIDPatientInfo').value;
     
         // Use JavaScript to fetch data from the Flask route
         const url = `/${patientID}/raw`;
@@ -112,20 +112,24 @@
     document.getElementById('patientInfoForm').addEventListener('submit', function (event) {
         searchPatient();
     });
-    
 
+    // Trigger the searchBloodTests function when the Enter key is pressed
+    document.getElementById('searchForm').addEventListener('submit', function (event) {
+        searchBloodTests();
+    });
+    
     function searchBloodTests() {
 
         // Remove existing SVG element
         d3.select('#heatmap').selectAll('*').remove();
 
         // Get values from form inputs
-        var patientID = document.getElementById('patientID').value;
+        var blood_test_patientID = document.getElementById('patientID').value;
         var effectiveDate = document.getElementById('date').value;
         var maxQuantity = document.getElementById('Quantity').value;
     
         // Use JavaScript to fetch data from the Flask route
-        const url = `/blood_tests/raw/${patientID}`;
+        const url = `/blood_tests/raw/${blood_test_patientID}`;
     
         fetch(url)
             .then(response => {
@@ -223,6 +227,8 @@
             // Add error handling here, e.g., display an error message to the user
         });
 }
+
+    
 
 </script>
 
