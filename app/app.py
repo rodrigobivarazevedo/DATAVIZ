@@ -1,9 +1,8 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, url_for
 from flask_sqlalchemy import SQLAlchemy
-import json
 from datetime import datetime
 import requests
-from collections import OrderedDict
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db'
@@ -271,18 +270,30 @@ def get_patient_fhir(patientID):
     }
 
     # Convert to regular dictionary if needed
-    return fhir_patient
+    return jsonify(fhir_patient)
+
+
+
 
 
 
 @app.route('/blood_tests/fhir/<int:patientID>', methods=['GET'])
 def get_blood_tests_fhir(patientID):
-    
-    # Process blood_tests as needed and return the raw data with colors
-    colored_blood_test_data = get_blood_tests_raw_data(patientID)
-    
-    # Transform each blood test data to FHIR format
-    return [transform_to_fhir_blood_test(blood_test, patientID) for blood_test in colored_blood_test_data]
+    # Build the URL for the raw data endpoint
+    raw_data_url = url_for('get_blood_tests_raw', patientID=patientID)
+
+    # Make a request to the raw data endpoint
+    response = requests.get(raw_data_url)  # Use requests.get instead of request.get
+
+    if response.status_code == 200:
+        # Process blood_tests as needed and return the raw data with colors
+        colored_blood_test_data = response.json()
+
+        # Transform each blood test data to FHIR format
+        return [transform_to_fhir_blood_test(blood_test, patientID) for blood_test in colored_blood_test_data]
+    else:
+        # Handle the case where the raw data request fails
+        return "Failed to retrieve raw blood test data.", response.status_code
 
 
         
@@ -290,14 +301,6 @@ def get_blood_tests_fhir(patientID):
 # Sample FHIR data endpoint for blood test
 @app.route('/blood_tests/raw/<int:patientID>', methods=['GET'])
 def get_blood_tests_raw(patientID):
-    return get_blood_tests_raw_data(patientID)
-    
-
-    
-    
-
-def get_blood_tests_raw_data(patientID):
-    # Get the date parameter from the request, default to None if not provided
     date_param = request.args.get('date', None)
 
     # Query based on ID and optionally DATE
@@ -305,8 +308,10 @@ def get_blood_tests_raw_data(patientID):
         date_value = datetime.strptime(date_param, "%Y-%m-%d").date()
         blood_tests = BloodIndicator.query.filter(BloodIndicator.ID == patientID, BloodIndicator.DATE == date_value).all()
     else:
+        query = BloodIndicator.query.filter(BloodIndicator.ID == patientID)
+        print(query)
         blood_tests = BloodIndicator.query.filter(BloodIndicator.ID == patientID).all()
-        
+    
     blood_test_data = []
     for blood_test in blood_tests:
         blood_test_data.append({
@@ -349,8 +354,6 @@ def get_blood_tests_raw_data(patientID):
             'Triglycerides (mmol/L)': blood_test.Triglycerides_mmol_L
         })
         
-    
-    
     colored_blood_test_data = [color_mapping(blood_test, healthy_levels_young_adults) for blood_test in blood_test_data]
 
     return colored_blood_test_data
