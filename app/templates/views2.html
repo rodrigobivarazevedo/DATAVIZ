@@ -90,23 +90,32 @@
             .then(data => {
                 console.log(data);
     
-                // Construct HTML to display patient information
-                const patientInfoHtml = `
-                    <p><strong>Patient ID:</strong> ${data.patientID}</p>
-                    <p><strong>First Name:</strong> ${data.first_name}</p>
-                    <p><strong>Last Name:</strong> ${data.last_name}</p>
-                    <p><strong>Birth Date:</strong> ${data.birth_date}</p>
-                    <p><strong>Gender:</strong> ${data.gender}</p>
-                `;
+                // Check if data is not an empty list
+                if (data.length > 0) {
+                    const patientInfo = data[0]; // Assuming there's only one element in the list
     
-                // Display patient information in the HTML
-                document.getElementById('patientInfo').innerHTML = patientInfoHtml;
+                    // Construct HTML to display patient information
+                    const patientInfoHtml = `
+                        <p><strong>Patient ID:</strong> ${patientInfo.ID}</p>
+                        <p><strong>First Name:</strong> ${patientInfo.FIRST_NAME}</p>
+                        <p><strong>Last Name:</strong> ${patientInfo.LAST_NAME}</p>
+                        <p><strong>Birth Date:</strong> ${patientInfo.BIRTH_DATE}</p>
+                        <p><strong>Gender:</strong> ${patientInfo.GENDER}</p>
+                    `;
+    
+                    // Display patient information in the HTML
+                    document.getElementById('patientInfo').innerHTML = patientInfoHtml;
+                } else {
+                    // Handle the case where the data list is empty
+                    console.error('Empty response data.');
+                }
             })
             .catch(error => {
                 console.error('Error fetching patient data:', error);
                 // Add error handling here, e.g., display an error message to the user
             });
     }
+    
     
     function searchBloodTests() {
 

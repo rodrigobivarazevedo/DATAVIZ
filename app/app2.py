@@ -69,10 +69,10 @@ def get_blood_level_color(indicator_name, level, reference_ranges):
         return "Indicator not found in the reference"
 
 # fucntion to update the dict adding the correspondent color as a key value next to the blood level
-def color_mapping(indicators_data, reference_ranges):
+def color_mapping(blood_test, reference_ranges):
     colored_indicators = {}
 
-    for indicator_name, level in indicators_data.items():
+    for indicator_name, level in blood_test.items():
         colored_indicators[indicator_name] = [level, get_blood_level_color(indicator_name, level, reference_ranges)]
     return colored_indicators
 
@@ -173,7 +173,7 @@ def determine_interpretation_code(color):
 
 @app2.route("/")
 def patient_data():
-    return render_template("index.html")  
+    return render_template("views2.html")  
 
 @app2.route("/heatmap")
 def visualization():
@@ -242,8 +242,52 @@ def get_blood_tests_fhir(patientID):
 def get_blood_tests_raw(patientID):
     
     date_param = request.args.get('date', None)
-    blood_tests = db.execute("SELECT * FROM blood_indicators WHERE ID = ?", patientID)    
-    colored_blood_test_data = [color_mapping(blood_test, healthy_levels_young_adults) for blood_test in blood_tests]
+    blood_tests = db.execute("SELECT * FROM blood_indicators WHERE ID = ?", patientID)  
+    
+    formated_blood_tests = []
+    for blood_test in blood_tests:
+        formated_blood_tests.append({
+            "Date": blood_test['DATE'],
+            'Albumin (g/dL)': blood_test['Albumin_g_dL'],
+            'Albumin (g/L)': blood_test['Albumin_g_L'],
+            'Alanine aminotransferase ALT (U/L)': blood_test['Alanine_aminotransferase_ALT_U_L'],
+            'Aspartate aminotransferase AST (U/L)': blood_test['Aspartate_aminotransferase_AST_U_L'],
+            'Alkaline phosphatase (U/L)': blood_test['Alkaline_phosphatase_U_L'],
+            'Blood urea nitrogen (mg/dL)': blood_test['Blood_urea_nitrogen_mg_dL'],
+            'Blood urea nitrogen (mmol/L)': blood_test['Blood_urea_nitrogen_mmol_L'],
+            'Total calcium (mg/dL)': blood_test['Total_calcium_mg_dL'],
+            'Total calcium (mmol/L)': blood_test['Total_calcium_mmol_L'],
+            'Creatine Phosphokinase (CPK) (IU/L)': blood_test['Creatine_Phosphokinase_CPK_IU_L'],
+            'Cholesterol (mg/dL)': blood_test['Cholesterol_mg_dL'],
+            'Cholesterol (mmol/L)': blood_test['Cholesterol_mmol_L'],
+            'Bicarbonate (mmol/L)': blood_test['Bicarbonate_mmol_L'],
+            'Creatinine (mg/dL)': blood_test['Creatinine_mg_dL'],
+            'Creatinine (umol/L)': blood_test['Creatinine_umol_L'],
+            'Gamma glutamyl transferase (U/L)': blood_test['Gamma_glutamyl_transferase_U_L'],
+            'Glucose, serum (mg/dL)': blood_test['Glucose_serum_mg_dL'],
+            'Glucose, serum (mmol/L)': blood_test['Glucose_serum_mmol_L'],
+            'Iron, refrigerated (ug/dL)': blood_test['Iron_refrigerated_ug_dL'],
+            'Iron, refrigerated (umol/L)': blood_test['Iron_refrigerated_umol_L'],
+            'Lactate Dehydrogenase (U/L)': blood_test['Lactate_dehydrogenase_U_L'],
+            'Phosphorus (mg/dL)': blood_test['Phosphorus_mg_dL'],
+            'Phosphorus (mmol/L)': blood_test['Phosphorus_mmol_L'],
+            'Total bilirubin (mg/dL)': blood_test['Total_bilirubin_mg_dL'],
+            'Total bilirubin (umol/L)': blood_test['Total_bilirubin_umol_L'],
+            'Total protein (g/dL)': blood_test['Total_protein_g_dL'],
+            'Total protein (g/L)': blood_test['Total_protein_g_L'],
+            'Uric acid (mg/dL)': blood_test['Uric_acid_mg_dL'],
+            'Uric acid (umol/L)': blood_test['Uric_acid_umol_L'],
+            'Sodium (mmol/L)': blood_test['Sodium_mmol_L'],
+            'Potassium (mmol/L)': blood_test['Potassium_mmol_L'],
+            'Chloride (mmol/L)': blood_test['Chloride_mmol_L'],
+            'Osmolality (mmol/Kg)': blood_test['Osmolality_mmol_Kg'],
+            'Globulin (g/dL)': blood_test['Globulin_g_dL'],
+            'Globulin (g/L)': blood_test['Globulin_g_L'],
+            'Triglycerides (mg/dL)': blood_test['Triglycerides_mg_dL'],
+            'Triglycerides (mmol/L)': blood_test['Triglycerides_mmol_L']
+        })
+              
+    colored_blood_test_data = [color_mapping(blood_test, healthy_levels_young_adults) for blood_test in formated_blood_tests]
 
     return jsonify(colored_blood_test_data)
 
