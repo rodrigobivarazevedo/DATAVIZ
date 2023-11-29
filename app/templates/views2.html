@@ -48,10 +48,7 @@
                             <input type="text" class="form-control" id="patientID" name="patientID"
                                 placeholder="Enter patient ID">
                         </div>
-                        <div class="form-group">
-                            <label for="date">Effective Date</label>
-                            <input type="date" class="form-control" id="date" name="date">
-                        </div>
+                        
                         <div>
                             <label for="blood_test_dates">Blood Tests Dates</label>
                             <ul></ul>
@@ -74,74 +71,28 @@
         let dates = await response.json();
         let html = '';
         for (let date of dates) {
-            html += '<li>' + date.DATE + '</li>';
+            // Add a button element with an onclick event to handle the HTTP request
+            html += `<li><button class="date-button" onclick="searchBloodTests('${input.value}', '${date.DATE}')">${date.DATE}</button></li>`;
         }
         document.querySelector('ul').innerHTML = html;
     });
 
 
-
-
-    function searchPatient() {
-        // Get values from form inputs
-        var patientID = document.getElementById('patientIDPatientInfo').value;
-    
-        // Use JavaScript to fetch data from the Flask route
-        const url = `/${patientID}/raw`;
-    
-        fetch(url, {
-            method: 'POST', // Use POST method
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log(data);
-    
-                // Check if data is not an empty list
-                if (data.length > 0) {
-                    const patientInfo = data[0]; // Assuming there's only one element in the list
-
-                    // Construct HTML to display patient information
-                    const patientInfoHtml = `
-                        <p><strong>Patient ID:</strong> ${patientInfo.ID}</p>
-                        <p><strong>First Name:</strong> ${patientInfo.FIRST_NAME}</p>
-                        <p><strong>Last Name:</strong> ${patientInfo.LAST_NAME}</p>
-                        <p><strong>Birth Date:</strong> ${patientInfo.BIRTH_DATE}</p>
-                        <p><strong>Gender:</strong> ${patientInfo.GENDER}</p>
-                    `;
-    
-                    // Display patient information in the HTML
-                    document.getElementById('patientInfo').innerHTML = patientInfoHtml;
-                } else {
-                    // Handle the case where the data list is empty
-                    console.error('Empty response data.');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching patient data:', error);
-                // Add error handling here, e.g., display an error message to the user
-            });
-    }
-    
-    
-    function searchBloodTests() {
+    function searchBloodTests(patientID, date) {
 
         // Remove existing SVG element
         d3.select('#heatmap').selectAll('*').remove();
 
         // Get values from form inputs
         var blood_test_patientID = document.getElementById('patientID').value;
-        var effectiveDate = document.getElementById('date').value;
-        var maxQuantity = document.getElementById('Quantity').value;
+        //var maxQuantity = document.getElementById('Quantity').value;
     
-        // Use JavaScript to fetch data from the Flask route
-        const url = `/blood_tests/raw/?ID=${blood_test_patientID}?date=${effectiveDate}`;
-    
-        fetch(url)
+        fetch(`/blood_tests/raw/${patientID}?date=${date}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -238,7 +189,50 @@
         });
 }
 
-    
+    function searchPatient() {
+        // Get values from form inputs
+        var patientID = document.getElementById('patientIDPatientInfo').value;
+
+        // Use JavaScript to fetch data from the Flask route
+        const url = `/${patientID}/raw`;
+
+        fetch(url, {
+            method: 'POST', // Use POST method
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+
+                // Check if data is not an empty list
+                if (data.length > 0) {
+                    const patientInfo = data[0]; // Assuming there's only one element in the list
+
+                    // Construct HTML to display patient information
+                    const patientInfoHtml = `
+                        <p><strong>Patient ID:</strong> ${patientInfo.ID}</p>
+                        <p><strong>First Name:</strong> ${patientInfo.FIRST_NAME}</p>
+                        <p><strong>Last Name:</strong> ${patientInfo.LAST_NAME}</p>
+                        <p><strong>Birth Date:</strong> ${patientInfo.BIRTH_DATE}</p>
+                        <p><strong>Gender:</strong> ${patientInfo.GENDER}</p>
+                    `;
+
+                    // Display patient information in the HTML
+                    document.getElementById('patientInfo').innerHTML = patientInfoHtml;
+                } else {
+                    // Handle the case where the data list is empty
+                    console.error('Empty response data.');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching patient data:', error);
+                // Add error handling here, e.g., display an error message to the user
+            });
+    }
 
 </script>
 

@@ -244,13 +244,15 @@ def dates():
 @app2.route('/blood_tests/raw/<int:patientID>', methods=['GET'])
 def get_blood_tests_raw(patientID):
     
-    date_param = request.form.get('date', None)
-    date_param = request.form.get('date', None)
+    date_param = request.args.get('date', None)
+    print(date_param)
     if date_param:
         blood_tests = db.execute("SELECT * FROM blood_indicators WHERE ID = ? AND DATE = ?", (patientID, date_param))
         print(blood_tests)
     else:
         blood_tests = db.execute("SELECT * FROM blood_indicators WHERE ID = ?", (patientID,))
+    # Continue processing and return the response
+
   
     print(blood_tests)
     formated_blood_tests = []
