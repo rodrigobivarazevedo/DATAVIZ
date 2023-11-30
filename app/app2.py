@@ -1,10 +1,9 @@
 from flask import Flask, request, jsonify, render_template, url_for
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import requests
 from cs50 import SQL
 from healthy_levels import healthy_levels_young_adults, older_adults_reference_ranges, older_elderly_reference_ranges
-from blood_functions import get_blood_level_color, color_mapping, transform_to_fhir_blood_test, determine_unit_and_code, determine_interpretation_code
+from blood_functions import color_mapping, transform_to_fhir_blood_test
 
 
 app2 = Flask(__name__)
