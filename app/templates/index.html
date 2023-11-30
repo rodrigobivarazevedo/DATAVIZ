@@ -131,93 +131,105 @@
             .then(data => {
                 console.log(data);
     
-                // Convert data to suitable format
-                const dataArray = [];
-                const dict = data[0]; // Assuming there's only one dictionary in the list
-                for (const key in dict) {
-                    const [value, color] = dict[key];
-                    dataArray.push({ value, color, key });
-                }
-    
-                // Define margin and cell size
-                const margin = { top: 20, right: 250, bottom: 20, left: 260 };
-                const cellSize = 30;
-                const cellWidth = 200;
-                const cellHeight = 30;
-    
-                // Create SVG element
-                const svg = d3.select('#heatmap').append('svg')
-                    .attr('width', 800)
-                    .attr('height', dataArray.length * cellHeight + margin.top + margin.bottom)
-                    .style('margin', margin.top + 'px ' + margin.right + 'px ' + margin.bottom + 'px ' + margin.left + 'px');
-        
-                // Define color scale based on color strings
-                const colorScale = d3.scaleOrdinal()
-                    .domain(['green', 'yellow', 'red'])
-                    .range(['green', '#ffd800', '#c80815']);
-            
-                // Draw cells
-                svg.selectAll('rect')
-                    .data(dataArray)
-                    .enter().append('rect')
-                    .attr('x', margin.left)
-                    .attr('y', (d, i) => margin.top + i * cellHeight)
-                    .attr('width', cellWidth)
-                    .attr('height', cellHeight)
-                    .style('fill', d => colorScale(d.color))
-                    .on('mouseover', function (event, d) {
-                        // Display blood level on mouse hover
-                        d3.select(this).append('title').text(`Blood Level: ${d.value}`);
-                    });
-            
-                // Add y-axis labels with word wrapping
-                svg.selectAll('text')
-                    .data(dataArray)
-                    .enter().append('text')
-                    .attr('x', margin.left - 10)
-                    .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
-                    .attr('dy', '0.35em')
-                    .style('text-anchor', 'end')
-                    .style('alignment-baseline', 'middle')
-                    .style('fill', 'black')
-                    .text(function (d) {
-                        // Split and wrap text to fit in the available space
-                        const words = d.key.split(/\s+/);
-                        let line = '';
-                        const lines = [];
-                        const lineHeight = 1.1; // ems
-            
-                        for (const word of words) {
-                            const testLine = line.length === 0 ? word : `${line} ${word}`;
-                            const metrics = this.getComputedTextLength();
-                            if (metrics > margin.left - 10 && line.length > 0) {
-                                lines.push(line);
-                                line = word;
-                            } else {
-                                line = testLine;
-                            }
+            // Convert data to suitable format
+            const dataArray = [];
+            const dict = data[0]; // Assuming there's only one dictionary in the list
+            for (const key in dict) {
+                const [value, color] = dict[key];
+                dataArray.push({ value, color, key });
+            }
+
+            // Define margin and cell size
+            const margin = { top: 20, right: 250, bottom: 20, left: 260 };
+            const cellSize = 30;
+            const cellWidth = 200;
+            const cellHeight = 30;
+
+            // Create SVG element
+            const svg = d3.select('#heatmap').append('svg')
+                .attr('width', 1000) // Increased width to accommodate values on the right
+                .attr('height', dataArray.length * cellHeight + margin.top + margin.bottom)
+                .style('margin', margin.top + 'px ' + margin.right + 'px ' + margin.bottom + 'px ' + margin.left + 'px');
+
+            // Define color scale based on color strings
+            const colorScale = d3.scaleOrdinal()
+                .domain(['green', 'yellow', 'red'])
+                .range(['green', '#ffd800', '#c80815']);
+
+            // Draw cells
+            svg.selectAll('rect')
+                .data(dataArray)
+                .enter().append('rect')
+                .attr('x', margin.left)
+                .attr('y', (d, i) => margin.top + i * cellHeight)
+                .attr('width', cellWidth)
+                .attr('height', cellHeight)
+                .style('fill', d => colorScale(d.color))
+                .on('mouseover', function (event, d) {
+                    // Display blood level on mouse hover
+                    d3.select(this).append('title').text(`Blood Level: ${d.value}`);
+                });
+
+            // Add y-axis labels with word wrapping
+            svg.selectAll('text')
+                .data(dataArray)
+                .enter().append('text')
+                .attr('x', margin.left - 10)
+                .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
+                .attr('dy', '0.35em')
+                .style('text-anchor', 'end')
+                .style('alignment-baseline', 'middle')
+                .style('fill', 'black')
+                .text(function (d) {
+                    // Split and wrap text to fit in the available space
+                    const words = d.key.split(/\s+/);
+                    let line = '';
+                    const lines = [];
+                    const lineHeight = 1.1; // ems
+
+                    for (const word of words) {
+                        const testLine = line.length === 0 ? word : `${line} ${word}`;
+                        const metrics = this.getComputedTextLength();
+                        if (metrics > margin.left - 10 && line.length > 0) {
+                            lines.push(line);
+                            line = word;
+                        } else {
+                            line = testLine;
                         }
-            
-                        lines.push(line);
-                        return lines.join('\n');
-                    });
-        
-                // Draw black lines between cells
-                svg.selectAll('line')
-                    .data(dataArray)
-                    .enter().append('line')
-                    .attr('x1', margin.left)
-                    .attr('x2', margin.left + cellWidth)
-                    .attr('y1', (d, i) => margin.top + (i + 1) * cellHeight)
-                    .attr('y2', (d, i) => margin.top + (i + 1) * cellHeight)
-                    .style('stroke', 'black');
+                    }
+
+                    lines.push(line);
+                    return lines.join('\n');
+                });
+
+            // Draw black lines between cells
+            svg.selectAll('line')
+                .data(dataArray)
+                .enter().append('line')
+                .attr('x1', margin.left)
+                .attr('x2', margin.left + cellWidth)
+                .attr('y1', (d, i) => margin.top + (i + 1) * cellHeight)
+                .attr('y2', (d, i) => margin.top + (i + 1) * cellHeight)
+                .style('stroke', 'black');
+
+            // Add text elements to display values and metric units on the right side of the heatmap
+            // Add text elements to display values and metric units on the right side of the heatmap
+            svg.selectAll('.value-text')
+            .data(dataArray)
+            .enter().append('text')
+            .attr('class', 'value-text')
+            .attr('x', margin.left + cellWidth + 10)
+            .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
+            .attr('dy', '0.35em')
+            .style('fill', 'black')
+            .text(d => `${d.value} ${d.key.split(/\s+/).pop()}`); // Only display the last part of the key
+
         })
         .catch(error => {
             console.error('Error fetching data:', error);
             // Add error handling here, e.g., display an error message to the user
         });
 }
-
     
 
 </script>
