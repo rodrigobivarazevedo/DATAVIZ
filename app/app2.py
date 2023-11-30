@@ -3,172 +3,12 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import requests
 from cs50 import SQL
+from healthy_levels import healthy_levels_young_adults, older_adults_reference_ranges, older_elderly_reference_ranges
+from blood_functions import get_blood_level_color, color_mapping, transform_to_fhir_blood_test, determine_unit_and_code, determine_interpretation_code
+
 
 app2 = Flask(__name__)
 db = SQL("sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db")
-
-# Healthy levels for young adults (age 20-39 years) - Reference ranges are approximate and may vary.
-healthy_levels_young_adults = {
-    "Albumin (g/dL)": {"min": 3.4, "max": 5.4},
-    "Albumin (g/L)": {"min": 34, "max": 54},
-    "Alanine aminotransferase ALT (U/L)": {"min": 5, "max": 40},
-    "Aspartate aminotransferase AST (U/L)": {"min": 8, "max": 48},
-    "Alkaline phosphatase (U/L)": {"min": 20, "max": 140},
-    "Blood urea nitrogen (mg/dL)": {"min": 8, "max": 25},
-    "Blood urea nitrogen (mmol/L)": {"min": 2.9, "max": 8.9},
-    "Total calcium (mg/dL)": {"min": 8.6, "max": 10.4},
-    "Total calcium (mmol/L)": {"min": 2.1, "max": 2.6},
-    "Creatine Phosphokinase (CPK) (IU/L)": {"min": 38, "max": 308},
-    "Cholesterol (mg/dL)": {"min": 125, "max": 200},
-    "Cholesterol (mmol/L)": {"min": 3.24, "max": 5.18},
-    "Bicarbonate (mmol/L)": {"min": 21, "max": 31},
-    "Creatinine (mg/dL)": {"min": 0.7, "max": 1.3},
-    "Creatinine (umol/L)": {"min": 61.9, "max": 115},
-    "Gamma glutamyl transferase (U/L)": {"min": 5, "max": 85},
-    "Glucose, serum (mg/dL)": {"min": 70, "max": 100},
-    "Glucose, serum (mmol/L)": {"min": 3.9, "max": 5.6},
-    "Iron, refrigerated (ug/dL)": {"min": 35, "max": 169},
-    "Iron, refrigerated (umol/L)": {"min": 6.26, "max": 30.29},
-    "Potassium (mmol/L)": {"min": 3.5, "max": 5.1},  
-    "Phosphorus (mg/dL)": {"min": 2.5, "max": 4.9},
-    "Phosphorus (mmol/L)": {"min": 0.81, "max": 1.58},  # Calculated from mg/dL
-    "Total bilirubin (mg/dL)": {"min": 0.2, "max": 1.2},
-    "Total bilirubin (umol/L)": {"min": 3.42, "max": 20.51},
-    "Total protein (g/dL)": {"min": 6.6, "max": 8.3},
-    "Total protein (g/L)": {"min": 66, "max": 83},
-    "Uric acid (mg/dL)": {"min": 2.4, "max": 7.2},
-    "Uric acid (umol/L)": {"min": 142, "max": 428},
-    "Sodium (mmol/L)": {"min": 135, "max": 146},
-    "Lactate Dehydrogenase (U/L)": {"min": 140, "max": 280},  
-    "Chloride (mmol/L)": {"min": 96, "max": 106},
-    "Osmolality (mmol/Kg)": {"min": 275, "max": 295},
-    "Globulin (g/dL)": {"min": 2.3, "max": 3.5},  
-    "Globulin (g/L)": {"min": 23, "max": 35},  
-    "Triglycerides (mg/dL)": {"min": 30, "max": 150},
-    "Triglycerides (mmol/L)": {"min": 0.34, "max": 1.69},
-}
-
-# function to get the color correspondent to the blood indicator level
-def get_blood_level_color(indicator_name, level, reference_ranges):
-    if indicator_name in reference_ranges:
-        reference = reference_ranges[indicator_name]
-        min_range = reference.get("min")
-        max_range = reference.get("max")
-
-        if min_range is not None and max_range is not None:
-            if level < min_range or level > max_range:
-                return "red"
-            elif abs(level - min_range) <= 0.2 * (max_range - min_range) or abs(level - max_range) <= 0.2 * (
-                    max_range - min_range):
-                return "yellow"
-            else:
-                return "green"
-        else:
-            return "Unknown reference range"
-    else:
-        return "Indicator not found in the reference"
-
-# fucntion to update the dict adding the correspondent color as a key value next to the blood level
-def color_mapping(blood_test, reference_ranges):
-    colored_indicators = {}
-
-    for indicator_name, level in blood_test.items():
-        colored_indicators[indicator_name] = [level, get_blood_level_color(indicator_name, level, reference_ranges)]
-    return colored_indicators
-
-# fucntion to tranform into FHIR format
-def transform_to_fhir_blood_test(data, patient_reference):
-    
-    fhir_observation = {
-        "resourceType": "Observation",
-        "status": "final",
-        "category": [
-            {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                        "code": "laboratory",
-                        "display": "Laboratory"
-                    }
-                ],
-                "text": "Laboratory"
-            }
-        ],
-        "code": {
-            "coding": [
-                {
-                    "system": "http://loinc.org",
-                    "code": "24357-5",
-                    "display": "Blood Panel"
-                }
-            ],
-            "text": "Blood Panel"
-        },
-        "subject": {
-            "reference": f"Patient/{patient_reference}"
-        },
-        
-        "component": []
-    }
-
-    for test_name, (result_value, color) in data.items():
-        unit, unit_code = determine_unit_and_code(test_name)
-        interpretation_code = determine_interpretation_code(color)
-        component = {
-            "code": {
-                "text": test_name
-            },
-            "valueQuantity": {
-                "value": result_value,
-                "unit": unit,
-                "system": "http://unitsofmeasure.org",
-                "code": unit_code
-            },
-            "interpretation": {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
-                        "code": interpretation_code,
-                        "display": interpretation_code.capitalize()
-                    }
-                ]
-            }
-        }
-        fhir_observation["component"].append(component)
-        
-    # Convert the dictionary to an OrderedDict
-    return fhir_observation
-
-
-def determine_unit_and_code(test_name):
-    # Add logic to determine the unit and unit code based on the test name
-    # You might need more sophisticated logic or external reference data
-    if "mg/dL" in test_name:
-        return "mg/dL", "mg/dL"
-    elif "g/dL" in test_name:
-        return "g/dL", "g/dL"
-    elif "U/L" in test_name:
-        return "U/L", "U/L"
-    elif "mmol/L" in test_name:
-        return "mmol/L", "mmol/L"
-    elif "ug/dL" in test_name:
-        return "ug/dL", "ug/dL"
-    elif "umol/L" in test_name:
-        return "umol/L", "umol/L"
-    else:
-        return "unknown", "unknown"
-
-def determine_interpretation_code(color):
-    # Map color to interpretation code based on the provided mapping
-    if color.lower() == "green":
-        return "N"  # Normal range
-    elif color.lower() == "yellow":
-        return "R"  # Medium range
-    elif color.lower() == "red":
-        return "H"  # Extreme range
-    else:
-        return "unknown"
-     
     
 
 @app2.route("/")
@@ -255,7 +95,6 @@ def get_blood_tests_raw(patientID):
         print("Error executing SQL query:", e)
 
   
-    print(blood_tests)
     formated_blood_tests = []
     for blood_test in blood_tests:
         formated_blood_tests.append({
