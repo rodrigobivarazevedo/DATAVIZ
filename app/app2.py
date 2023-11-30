@@ -229,7 +229,7 @@ def get_blood_tests_fhir(patientID):
         # Handle the case where the raw data request fails
         return "Failed to retrieve raw blood test data.", response.status_code
 
-@app2.route("/dates")
+@app2.route("/blood_dates")
 def dates():
     q = request.args.get("q")
     if q:
@@ -244,14 +244,15 @@ def dates():
 @app2.route('/blood_tests/raw/<int:patientID>', methods=['GET'])
 def get_blood_tests_raw(patientID):
     
-    date_param = request.args.get('date', None)
-    print(date_param)
-    if date_param:
-        blood_tests = db.execute("SELECT * FROM blood_indicators WHERE ID = ? AND DATE = ?", (patientID, date_param))
-        print(blood_tests)
-    else:
-        blood_tests = db.execute("SELECT * FROM blood_indicators WHERE ID = ?", (patientID,))
-    # Continue processing and return the response
+    date_param_str = request.args.get('date', None)
+    date_param = datetime.strptime(date_param_str, '%Y-%m-%d').date()
+    try:
+        query = "SELECT * FROM blood_indicators WHERE ID = ? AND `DATE` = ?"
+        values = (patientID, date_param)
+        blood_tests = db.execute(query, *values)
+    
+    except Exception as e:
+        print("Error executing SQL query:", e)
 
   
     print(blood_tests)

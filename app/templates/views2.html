@@ -67,7 +67,7 @@
 
     let input = document.getElementById('patientID');
     input.addEventListener('input', async function () {
-        let response = await fetch('/dates?q=' + input.value);
+        let response = await fetch('/blood_dates?q=' + input.value);
         let dates = await response.json();
         let html = '';
         for (let date of dates) {
@@ -83,10 +83,6 @@
         // Remove existing SVG element
         d3.select('#heatmap').selectAll('*').remove();
 
-        // Get values from form inputs
-        var blood_test_patientID = document.getElementById('patientID').value;
-        //var maxQuantity = document.getElementById('Quantity').value;
-    
         fetch(`/blood_tests/raw/${patientID}?date=${date}`, {
             method: 'GET',
             headers: {
