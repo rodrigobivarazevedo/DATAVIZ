@@ -121,3 +121,17 @@ def determine_interpretation_code(color):
     
     
     
+def color_percentages(blood_tests):
+    blood_test = blood_tests[0]
+    green = 0.0
+    yellow = 0.0
+    red = 0.0
+    for key, value in blood_test.items():
+        color = blood_test[key][1]
+        if color == "green":
+            green +=1
+        if color == "yellow":
+            yellow +=1
+        if color == "red":
+            red +=1
+    return [green/37,yellow/37,red/37,] # there are 37 blood indicators

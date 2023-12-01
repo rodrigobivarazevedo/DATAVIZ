@@ -1,0 +1,11 @@
+.flexcontainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 20px;
+}
+
+#heatmap, #pieChart {
+    width: 48%; /* Adjust the width as needed */
+    box-sizing: border-box; /* Include padding and border in the width */
+}

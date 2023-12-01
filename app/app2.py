@@ -3,7 +3,7 @@ from datetime import datetime
 import requests
 from cs50 import SQL
 from healthy_levels import healthy_levels_young_adults, older_adults_reference_ranges, older_elderly_reference_ranges
-from blood_functions import color_mapping, transform_to_fhir_blood_test
+from blood_functions import color_mapping, transform_to_fhir_blood_test, color_percentages
 
 
 app2 = Flask(__name__)
@@ -105,7 +105,7 @@ def get_blood_tests_raw(patientID):
     formated_blood_tests = []
     for blood_test in blood_tests:
         formated_blood_tests.append({
-            "Date": blood_test['DATE'],
+            
             'Albumin (g/dL)': blood_test['Albumin_g_dL'],
             'Albumin (g/L)': blood_test['Albumin_g_L'],
             'Alanine aminotransferase ALT (U/L)': blood_test['Alanine_aminotransferase_ALT_U_L'],
@@ -149,17 +149,17 @@ def get_blood_tests_raw(patientID):
     
     if 20 <= patient_age <= 39:
         reference_ranges = healthy_levels_young_adults
-        print("using healthy_levels_young_adults")
+        
     elif 40 <= patient_age < 65:
         reference_ranges = older_adults_reference_ranges
-        print("using older_adults_reference_ranges")
+        
     elif patient_age >= 65:
         reference_ranges = older_elderly_reference_ranges
-        print("using older_elderly_reference_ranges")
+        
           
         
     colored_blood_test_data = [color_mapping(blood_test, reference_ranges) for blood_test in formated_blood_tests]
-
+    percentages = color_percentages(colored_blood_test_data)
     return jsonify(colored_blood_test_data)
 
 
