@@ -118,3 +118,6 @@ def determine_interpretation_code(color):
         return "H"  # Extreme range
     else:
         return "unknown"
+    
+    
+    

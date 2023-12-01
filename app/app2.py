@@ -23,6 +23,14 @@ def visualization():
 def get_patient_raw(patientID):
     # Get patient information from the database
     patient_data = db.execute("SELECT * FROM patients WHERE ID = ?", patientID)
+    # date_of_birth is in the format 'YYYY-MM-DD'
+    birth_date = datetime.strptime(patient_data[0]["BIRTH_DATE"], '%Y-%m-%d')
+    current_date = datetime.now()
+    
+    # Calculate the difference in years
+    age = current_date.year - birth_date.year - ((current_date.month, current_date.day) < (birth_date.month, birth_date.day))
+    # Add the "AGE" key to the dictionary
+    patient_data[0]["AGE"] = age
     return patient_data 
 
 # Sample FHIR data endpoint for Patient data
@@ -136,10 +144,21 @@ def get_blood_tests_raw(patientID):
             'Triglycerides (mg/dL)': blood_test['Triglycerides_mg_dL'],
             'Triglycerides (mmol/L)': blood_test['Triglycerides_mmol_L']
         })
-        
     
-              
-    colored_blood_test_data = [color_mapping(blood_test, healthy_levels_young_adults) for blood_test in formated_blood_tests]
+    patient_age = get_patient_raw(patientID)[0]["AGE"]
+    
+    if 20 <= patient_age <= 39:
+        reference_ranges = healthy_levels_young_adults
+        print("using healthy_levels_young_adults")
+    elif 40 <= patient_age < 65:
+        reference_ranges = older_adults_reference_ranges
+        print("using older_adults_reference_ranges")
+    elif patient_age >= 65:
+        reference_ranges = older_elderly_reference_ranges
+        print("using older_elderly_reference_ranges")
+          
+        
+    colored_blood_test_data = [color_mapping(blood_test, reference_ranges) for blood_test in formated_blood_tests]
 
     return jsonify(colored_blood_test_data)
 

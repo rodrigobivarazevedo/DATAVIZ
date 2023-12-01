@@ -19,7 +19,6 @@
                 <div class="card-body">
                     <div id="patientInfo"></div>
                     
-                    <!-- Add padding to the top of the form -->
                     <form id="patientInfoForm" onsubmit="searchPatient(); return false;" method="post" style="padding-top: 20px;">
                         <!-- Prevents default form submission -->
                         <div class="form-group">
@@ -41,8 +40,8 @@
                     Blood Tests Information
                 </div>
                 <div class="card-body">
-                    <form id="searchForm" onsubmit="searchBloodTests(); return false;">
-                        <!-- Prevents default form submission -->
+                    <form id="searchForm">
+                        
                         <div class="form-group">
                             <label for="patientID">Patient ID</label>
                             <input type="text" class="form-control" id="patientID" name="patientID"
@@ -50,10 +49,10 @@
                         </div>
                         
                         <div>
-                            <label for="blood_test_dates">Blood Tests Dates</label>
+                            <label for="blood_test_dates">Available Blood Tests Dates</label>
                             <ul></ul>
                         </div>
-                        <button type="submit" class="btn btn-primary mt-3">Search</button>
+                        
                     </form>
                 </div>
             </div>
@@ -72,7 +71,7 @@
         let html = '';
         for (let date of dates) {
             // Add a button element with an onclick event to handle the HTTP request
-            html += `<li><button class="date-button" onclick="searchBloodTests('${input.value}', '${date.DATE}')">${date.DATE}</button></li>`;
+            html += `<li><button class="date-button" onclick="searchBloodTests('${input.value}', '${date.DATE}'); return false;">${date.DATE}</button></li>`;
         }
         document.querySelector('ul').innerHTML = html;
     });
@@ -228,6 +227,7 @@
                         <p><strong>Last Name:</strong> ${patientInfo.LAST_NAME}</p>
                         <p><strong>Birth Date:</strong> ${patientInfo.BIRTH_DATE}</p>
                         <p><strong>Gender:</strong> ${patientInfo.GENDER}</p>
+                        <p><strong>Age:</strong> ${patientInfo.AGE}</p>
                     `;
 
                     // Display patient information in the HTML
