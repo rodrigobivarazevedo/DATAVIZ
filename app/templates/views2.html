@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <title>Blood Tests Visualization App</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/home/rodrigo/repos/DATAVIZ_project/app/static/styles.css">
     <!-- Load d3.js -->
     <script src="https://d3js.org/d3.v6.js"></script>
     <style>
@@ -18,7 +17,7 @@
         }
         
         #heatmap, #pieChart {
-            width: 250px; /* Adjust the width as needed */
+            width: 300px; /* Adjust the width as needed */
         }
     </style>
     
@@ -82,7 +81,11 @@
     <div id="heatmap"></div>
     <div id="pieChart"></div>
 </div>
+
+
 <script>
+
+    
 
     let input = document.getElementById('patientID');
     input.addEventListener('input', async function () {
