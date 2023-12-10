@@ -17,7 +17,11 @@
         }
         
         #heatmap, #pieChart {
-            width: 300px; /* Adjust the width as needed */
+            width: 200px; /* Adjust the width as needed */
+        }
+        .active {
+            background-color: blue;
+            color: white;
         }
     </style>
     
@@ -28,13 +32,12 @@
 
     <div class="row">
         <!-- First Card -->
-        <div class="col-md-6">
+        <div class="col-md-3">
             <div class="card">
                 <div class="card-header">
                     Patient Information
                 </div>
                 <div class="card-body">
-                    <div id="patientInfo"></div>
                     
                     <form id="patientInfoForm" onsubmit="searchPatient(); return false;" method="post" style="padding-top: 20px;">
                         <!-- Prevents default form submission -->
@@ -42,185 +45,67 @@
                             <label for="patientIDPatientInfo">Patient ID</label>
                             <input type="text" class="form-control" id="patientIDPatientInfo" name="patientIDPatientInfo" placeholder="Enter patient ID">
                         </div>
-                        <button type="submit" class="btn btn-primary mt-3">Search</button>
+                        <button type="submit" class="btn btn-primary mt-3">Get Patient Info</button>
                     </form>
+                </br>
+                    <div id="patientInfo"></div>
+
+                    <div>
+                        <label for="blood_test_dates">Available Blood Tests Dates</label>
+                        <ul></ul>
+                    </div>
+                    
                 </div>
             </div>
         </div>
 
+<!-- Create a div where the graphs will take place -->
+        <div class="col-md-3">
+            <div id="pieChart"></div>
+        </div>
 
-        
-         <!-- Second Card -->
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    Blood Tests Information
-                </div>
-                <div class="card-body">
-                    <form id="searchForm">
-                        
-                        <div class="form-group">
-                            <label for="patientID">Patient ID</label>
-                            <input type="text" class="form-control" id="patientID" name="patientID"
-                                placeholder="Enter patient ID">
-                        </div>
-                        
-                        <div>
-                            <label for="blood_test_dates">Available Blood Tests Dates</label>
-                            <ul></ul>
-                        </div>
-                        
-                    </form>
-                </div>
-            </div>
+            <div id="heatmap"></div>
         </div>
+
     </div>
 </div>
-<!-- Create a div where the graphs will take place -->
-<div class="flexcontainer">
-    <div id="heatmap"></div>
-    <div id="pieChart"></div>
-</div>
+
+
 
 
 <script>
 
     
-
-    let input = document.getElementById('patientID');
+    
+    let input = document.getElementById('patientIDPatientInfo');
     input.addEventListener('input', async function () {
         let response = await fetch('/blood_dates?q=' + input.value);
         let dates = await response.json();
         let html = '';
         for (let date of dates) {
             // Add a button element with an onclick event to handle the HTTP request
-            html += `<li><button class="date-button" onclick="drawHeatmap('${input.value}', '${date.DATE}'); return false;">${date.DATE}</button></li>`;
+            html += `<li><button class="date-button" onclick="drawHeatmap('${input.value}', '${date.DATE}'); toggleButton(this); return false;">${date.DATE}</button></li>`;
         }
         document.querySelector('ul').innerHTML = html;
     });
 
+    let activeButton = null;
 
-    function drawHeatmap(patientID, date) {
+    function toggleButton(button) {
+        if (activeButton) {
+            // If there's an active button, remove the 'active' class
+            activeButton.classList.remove('active');
+        }
 
-        // Remove existing SVG element
-        d3.select('#heatmap').selectAll('*').remove();
+        // Add the 'active' class to the clicked button
+        button.classList.add('active');
+        // Set the clicked button as the active button
+        activeButton = button;
+    }
 
-        fetch(`/blood_tests/raw/${patientID}?date=${date}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-                
-            })
-            .then(data => {
-                 
-            // Convert data to suitable format
-            const dataArray = [];
-            const dict = data[0]; // Assuming there's only one dictionary in the list
-            drawPieChart(dict)
 
-            for (const key in dict) {
-                const [value, color] = dict[key];
-                dataArray.push({ value, color, key });
-            }
 
-            // Define margin and cell size
-            const margin = { top: 20, right: 250, bottom: 20, left: 275 };
-            const cellSize = 30;
-            const cellWidth = 200;
-            const cellHeight = 30;
-
-            // Create SVG element
-            const svg = d3.select('#heatmap').append('svg')
-                .attr('width', 1000) // Increased width to accommodate values on the right
-                .attr('height', dataArray.length * cellHeight + margin.top + margin.bottom)
-                .style('margin', margin.top + 'px ' + margin.right + 'px ' + margin.bottom + 'px ' + margin.left + 'px');
-
-            // Define color scale based on color strings
-            const colorScale = d3.scaleOrdinal()
-                .domain(['green', 'yellow', 'red'])
-                .range(['green', '#ffd800', '#c80815']);
-
-            // Draw cells
-            svg.selectAll('rect')
-                .data(dataArray)
-                .enter().append('rect')
-                .attr('x', margin.left)
-                .attr('y', (d, i) => margin.top + i * cellHeight)
-                .attr('width', cellWidth)
-                .attr('height', cellHeight)
-                .style('fill', d => colorScale(d.color))
-                .on('mouseover', function (event, d) {
-                    // Display blood level on mouse hover
-                    d3.select(this).append('title').text(`Blood Level: ${d.value}`);
-                });
-
-            // Add y-axis labels with word wrapping
-            svg.selectAll('text')
-                .data(dataArray)
-                .enter().append('text')
-                .attr('x', margin.left - 10)
-                .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
-                .attr('dy', '0.35em')
-                .style('text-anchor', 'end')
-                .style('alignment-baseline', 'middle')
-                .style('fill', 'black')
-                .text(function (d) {
-                    // Split and wrap text to fit in the available space
-                    const words = d.key.split(/\s+/);
-                    let line = '';
-                    const lines = [];
-                    const lineHeight = 1.1; // ems
-
-                    for (const word of words) {
-                        const testLine = line.length === 0 ? word : `${line} ${word}`;
-                        const metrics = this.getComputedTextLength();
-                        if (metrics > margin.left - 10 && line.length > 0) {
-                            lines.push(line);
-                            line = word;
-                        } else {
-                            line = testLine;
-                        }
-                    }
-
-                    lines.push(line);
-                    return lines.join('\n');
-                });
-
-            // Draw black lines between cells
-            svg.selectAll('line')
-                .data(dataArray)
-                .enter().append('line')
-                .attr('x1', margin.left)
-                .attr('x2', margin.left + cellWidth)
-                .attr('y1', (d, i) => margin.top + (i + 1) * cellHeight)
-                .attr('y2', (d, i) => margin.top + (i + 1) * cellHeight)
-                .style('stroke', 'black');
-
-            // Add text elements to display values and metric units on the right side of the heatmap
-            // Add text elements to display values and metric units on the right side of the heatmap
-            svg.selectAll('.value-text')
-            .data(dataArray)
-            .enter().append('text')
-            .attr('class', 'value-text')
-            .attr('x', margin.left + cellWidth + 10)
-            .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
-            .attr('dy', '0.35em')
-            .style('fill', 'black')
-            .text(d => `${d.value} ${d.key.split(/\s+/).pop()}`); // Only display the last part of the key
-
-        })
-        .catch(error => {
-            console.error('Error fetching data:', error);
-            // Add error handling here, e.g., display an error message to the user
-        });
-}
 
     function searchPatient() {
         // Get values from form inputs
@@ -268,6 +153,130 @@
             });
     }
 
+
+
+    function drawHeatmap(patientID, date) {
+
+        // Remove existing SVG element
+        d3.select('#heatmap').selectAll('*').remove();
+
+        fetch(`/blood_tests/raw/${patientID}?date=${date}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+                
+            })
+            .then(data => {
+                 
+            // Convert data to suitable format
+            const dataArray = [];
+            const dict = data[0]; // Assuming there's only one dictionary in the list
+            drawPieChart(dict)
+
+            for (const key in dict) {
+                const [value, color] = dict[key];
+                dataArray.push({ value, color, key });
+            }
+
+            // Define margin and cell size
+            const margin = { top: 20, right: 20, bottom: 20, left: 100 };
+            const cellSize = 30;
+            const cellWidth = 200;
+            const cellHeight = 25;
+
+            // Create SVG element
+            const svg = d3.select('#heatmap').append('svg')
+                .attr('width', 600) // Increased width to accommodate values on the right
+                .attr('height', dataArray.length * cellHeight + margin.top + margin.bottom)
+                .style('margin', margin.top + 'px ' + margin.right + 'px ' + margin.bottom + 'px ' + margin.left + 'px');
+
+            // Define color scale based on color strings
+            const colorScale = d3.scaleOrdinal()
+                .domain(['green', 'yellow', 'red'])
+                .range(['green', '#ffd800', '#c80815']);
+
+            // Draw cells
+            svg.selectAll('rect')
+                .data(dataArray)
+                .enter().append('rect')
+                .attr('x', margin.left)
+                .attr('y', (d, i) => margin.top + i * cellHeight)
+                .attr('width', cellWidth)
+                .attr('height', cellHeight)
+                .style('fill', d => colorScale(d.color))
+                .on('mouseover', function (event, d) {
+                    // Display blood level on mouse hover
+                    d3.select(this).append('title').text(`Blood Level: ${d.value}`);
+                });
+
+            // Add y-axis labels with word wrapping
+            svg.selectAll('text')
+                .data(dataArray)
+                .enter().append('text')
+                .attr('x', margin.left - 10)
+                .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
+                .attr('dy', '0.10em')
+                .style('text-anchor', 'end')
+                .style('alignment-baseline', 'middle')
+                .style('fill', 'black')
+                .text(function (d) {
+                    // Split and wrap text to fit in the available space
+                    const words = d.key.split(/\s+/);
+                    let line = '';
+                    const lines = [];
+                    const lineHeight = 1.1; // ems
+
+                    for (const word of words) {
+                        const testLine = line.length === 0 ? word : `${line} ${word}`;
+                        const metrics = this.getComputedTextLength();
+                        if (metrics > margin.left - 10 && line.length > 0) {
+                            lines.push(line);
+                            line = word;
+                        } else {
+                            line = testLine;
+                        }
+                    }
+
+                    lines.push(line);
+                    return lines.join('\n');
+                });
+
+            // Draw black lines between cells
+            svg.selectAll('line')
+                .data(dataArray)
+                .enter().append('line')
+                .attr('x1', margin.left)
+                .attr('x2', margin.left + cellWidth)
+                .attr('y1', (d, i) => margin.top + (i + 1) * cellHeight)
+                .attr('y2', (d, i) => margin.top + (i + 1) * cellHeight)
+                .style('stroke', 'black');
+
+            // Add text elements to display values and metric units on the right side of the heatmap
+            svg.selectAll('.value-text')
+            .data(dataArray)
+            .enter().append('text')
+            .attr('class', 'value-text')
+            .attr('x', margin.left + cellWidth + 10)
+            .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
+            .attr('dy', '0.10em')
+            .style('fill', 'black')
+            .text(d => `${d.value} ${d.key.split(/\s+/).pop()}`); // Only display the last part of the key
+
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            // Add error handling here, e.g., display an error message to the user
+        });
+}
+
+
     function calculateColorPercentages(blood_test) {
     let green = 0.0;
     let yellow = 0.0;
@@ -301,8 +310,8 @@
         d3.select('#pieChart').selectAll('*').remove();
         const percentages = calculateColorPercentages(data);
 
-        const width = 300;
-        const height = 300;
+        const width = 200;
+        const height = 200;
         const radius = Math.min(width, height) / 2;
 
         const color = d3.scaleOrdinal()
