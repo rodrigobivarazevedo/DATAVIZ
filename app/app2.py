@@ -105,7 +105,7 @@ def get_blood_tests_raw(patientID):
     formated_blood_tests = []
     for blood_test in blood_tests:
         formated_blood_tests.append({
-            
+            '''
             'Albumin (g/dL)': blood_test['Albumin_g_dL'],
             'Albumin (g/L)': blood_test['Albumin_g_L'],
             'Alanine aminotransferase ALT (U/L)': blood_test['Alanine_aminotransferase_ALT_U_L'],
@@ -142,6 +142,31 @@ def get_blood_tests_raw(patientID):
             'Globulin (g/dL)': blood_test['Globulin_g_dL'],
             'Globulin (g/L)': blood_test['Globulin_g_L'],
             'Triglycerides (mg/dL)': blood_test['Triglycerides_mg_dL'],
+            'Triglycerides (mmol/L)': blood_test['Triglycerides_mmol_L']'''
+            
+            'Albumin (g/L)': blood_test['Albumin_g_L'],
+            'Alanine aminotransferase ALT (U/L)': blood_test['Alanine_aminotransferase_ALT_U_L'],
+            'Aspartate aminotransferase AST (U/L)': blood_test['Aspartate_aminotransferase_AST_U_L'],
+            'Alkaline phosphatase (U/L)': blood_test['Alkaline_phosphatase_U_L'],
+            'Blood urea nitrogen (mmol/L)': blood_test['Blood_urea_nitrogen_mmol_L'],
+            'Total calcium (mmol/L)': blood_test['Total_calcium_mmol_L'],
+            'Creatine Phosphokinase (CPK) (IU/L)': blood_test['Creatine_Phosphokinase_CPK_IU_L'],
+            'Cholesterol (mmol/L)': blood_test['Cholesterol_mmol_L'],
+            'Bicarbonate (mmol/L)': blood_test['Bicarbonate_mmol_L'],
+            'Creatinine (umol/L)': blood_test['Creatinine_umol_L'],
+            'Gamma glutamyl transferase (U/L)': blood_test['Gamma_glutamyl_transferase_U_L'],
+            'Glucose, serum (mmol/L)': blood_test['Glucose_serum_mmol_L'],
+            'Iron, refrigerated (umol/L)': blood_test['Iron_refrigerated_umol_L'],
+            'Lactate Dehydrogenase (U/L)': blood_test['Lactate_dehydrogenase_U_L'],
+            'Phosphorus (mmol/L)': blood_test['Phosphorus_mmol_L'],
+            'Total bilirubin (umol/L)': blood_test['Total_bilirubin_umol_L'],
+            'Total protein (g/L)': blood_test['Total_protein_g_L'],
+            'Uric acid (umol/L)': blood_test['Uric_acid_umol_L'],
+            'Sodium (mmol/L)': blood_test['Sodium_mmol_L'],
+            'Potassium (mmol/L)': blood_test['Potassium_mmol_L'],
+            'Chloride (mmol/L)': blood_test['Chloride_mmol_L'],
+            'Osmolality (mmol/Kg)': blood_test['Osmolality_mmol_Kg'],
+            'Globulin (g/L)': blood_test['Globulin_g_L'],
             'Triglycerides (mmol/L)': blood_test['Triglycerides_mmol_L']
         })
     
@@ -149,8 +174,13 @@ def get_blood_tests_raw(patientID):
     reference_ranges = get_blood_tests_references(patient_age)
             
     colored_blood_test_data = [color_mapping(blood_test, reference_ranges) for blood_test in formated_blood_tests]
+
+    combined_dict = {}
+    for key, values in colored_blood_test_data[0].items():
+        if key in healthy_levels_young_adults:
+            combined_dict[key] = values + [healthy_levels_young_adults[key]]
     
-    return jsonify(colored_blood_test_data)
+    return jsonify(combined_dict)
 
 @app2.route('/blood_tests_references/raw/<int:age>', methods=['GET'])
 def get_blood_tests_references(age):
