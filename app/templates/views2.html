@@ -245,6 +245,15 @@
                 .attr('y2', (d, i) => margin.top + (i + 1) * cellHeight)
                 .style('stroke', 'black');
 
+            // Draw a black line in the middle of the heatmap
+            svg.append('line')
+            .attr('x1', margin.left + cellWidth / 2)
+            .attr('x2', margin.left + cellWidth / 2)
+            .attr('y1', margin.top)
+            .attr('y2', dataArray.length * cellHeight + margin.top)
+            .style('stroke', 'black');
+
+
             // Add text elements to display values and metric units on the right side of the heatmap
             svg.selectAll('.value-text')
             .data(dataArray)
