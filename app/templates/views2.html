@@ -60,12 +60,12 @@
         </div>
 
 <!-- Create a div where the graphs will take place -->
-        <div class="col-md-3">
+        <div class="col-md-1">
             <div id="pieChart"></div>
         </div>
 
-        <div class="col-md-6">
-            <div id="heatmap"></div>
+        <div class="col-md-8" id="heatmap">
+            
         </div>
 
     </div>
@@ -187,7 +187,7 @@
             }
 
             // Define margin and cell size
-            const margin = { top: 10, right: 20, bottom: 20, left: 100 };
+            const margin = { top: 10, right: 20, bottom: 20, left: 200 };
             const cellSize = 30;
             const cellWidth = 200;
             const cellHeight = 25;
@@ -195,7 +195,7 @@
         
             // Create SVG element
             const svg = d3.select('#heatmap').append('svg')
-                .attr('width', 700) // Increased width to accommodate values on the right
+                .attr('width', 600) // Increased width to accommodate values on the right
                 .attr('height', dataArray.length * cellHeight + margin.top + margin.bottom)
                 .style('margin', margin.top + 'px ' + margin.right + 'px ' + margin.bottom + 'px ' + margin.left + 'px');
 
@@ -220,35 +220,20 @@
 
             // Add y-axis labels with word wrapping
             svg.selectAll('text')
-                .data(dataArray)
-                .enter().append('text')
-                .attr('x', margin.left - 10)
-                .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
-                .attr('dy', '0.10em')
-                .style('text-anchor', 'end')
-                .style('alignment-baseline', 'middle')
-                .style('fill', 'black')
-                .text(function (d) {
-                    // Split and wrap text to fit in the available space
-                    const words = d.key.split(/\s+/);
-                    let line = '';
-                    const lines = [];
-                    const lineHeight = 1.1; // ems
-
-                    for (const word of words) {
-                        const testLine = line.length === 0 ? word : `${line} ${word}`;
-                        const metrics = this.getComputedTextLength();
-                        if (metrics > margin.left - 10 && line.length > 0) {
-                            lines.push(line);
-                            line = word;
-                        } else {
-                            line = testLine;
-                        }
-                    }
-
-                    lines.push(line);
-                    return lines.join('\n');
-                });
+            .data(dataArray)
+            .enter().append('text')
+            .attr('x', margin.left - 10)
+            .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
+            .attr('dy', '0.10em')
+            .style('text-anchor', 'end')
+            .style('alignment-baseline', 'middle')
+            .style('fill', 'black')
+            .text(function (d) {
+                // Extract and display only the relevant part of the key
+                const words = d.key.split(/\s+/);
+                const keyWithoutUnits = words.slice(0, -1).join(' '); // Exclude the last word (metric unit)
+                return keyWithoutUnits;
+            });
 
             // Draw black lines between cells
             svg.selectAll('line')
