@@ -146,23 +146,24 @@ def get_blood_tests_raw(patientID):
         })
     
     patient_age = get_patient_raw(patientID)[0]["AGE"]
-    
-    if 20 <= patient_age <= 39:
-        reference_ranges = healthy_levels_young_adults
-        
-    elif 40 <= patient_age < 65:
-        reference_ranges = older_adults_reference_ranges
-        
-    elif patient_age >= 65:
-        reference_ranges = older_elderly_reference_ranges
-        
-          
-        
+    reference_ranges = get_blood_tests_references(patient_age)
+            
     colored_blood_test_data = [color_mapping(blood_test, reference_ranges) for blood_test in formated_blood_tests]
-    percentages = color_percentages(colored_blood_test_data)
+    
     return jsonify(colored_blood_test_data)
 
-
+@app2.route('/blood_tests_references/raw/<int:age>', methods=['GET'])
+def get_blood_tests_references(age):
+    if 20 <= age <= 39:
+        reference_ranges = healthy_levels_young_adults
+        
+    elif 40 <= age < 65:
+        reference_ranges = older_adults_reference_ranges
+        
+    elif age >= 65:
+        reference_ranges = older_elderly_reference_ranges
+    
+    return reference_ranges
 
 if __name__ == '__main__':
     app2.run(debug=True)
