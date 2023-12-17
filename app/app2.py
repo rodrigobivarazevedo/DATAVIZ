@@ -136,11 +136,11 @@ def get_blood_tests_raw(patientID):
     reference_ranges = get_blood_tests_references(patient_age)
             
     colored_blood_test_data = [color_mapping(blood_test, reference_ranges) for blood_test in formated_blood_tests]
-
+    print(colored_blood_test_data)
     combined_dict = {}
     for key, values in colored_blood_test_data[0].items():
-        if key in healthy_levels_young_adults:
-            combined_dict[key] = values + [healthy_levels_young_adults[key]]
+        if key in reference_ranges:
+            combined_dict[key] = values + [reference_ranges[key]]
     
     return jsonify(combined_dict)
 
@@ -209,8 +209,8 @@ def blood_tests_raw(patientID):
 
         combined_dict = {}
         for key, values in colored_blood_test_data[0].items():
-            if key in healthy_levels_young_adults:
-                combined_dict[key] = values + [healthy_levels_young_adults[key]]
+            if key in reference_ranges:
+                combined_dict[key] = values + [reference_ranges[key]]
 
         return jsonify(combined_dict)
     else:
@@ -259,8 +259,13 @@ def blood_tests_raw(patientID):
         # Similar to the logic for a specific date, you can proceed with coloring, combining, etc.
         reference_ranges_all = get_blood_tests_references(get_patient_raw(patientID)[0]["AGE"])
         colored_blood_test_data_all = [color_mapping(blood_test_all, reference_ranges_all) for blood_test_all in formatted_blood_tests_all]
-        # For example, just returning all formatted blood tests without additional processing:
-        return colored_blood_test_data_all
+        
+        combined_dict_all = {}
+        for key, values in colored_blood_test_data_all[0].items():
+            if key in reference_ranges_all:
+                combined_dict_all[key] = values + [reference_ranges_all[key]]
+        
+        return jsonify(colored_blood_test_data_all)
 
 
 

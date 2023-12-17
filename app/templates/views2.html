@@ -125,11 +125,12 @@
             <option value="Triglycerides (mmol/L)" name="Triglycerides (mmol/L)">Triglycerides (mmol/L)</option>
         </select>
     </div>
+
+
+
+<div class="mt-3" id="resultsContainer"></div>
+    <div id="histogram"></div>
 </div>
-
-
-<div id="resultsContainer"></div>
-
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
@@ -178,25 +179,102 @@
         const blood_indicator_history = filteredTests.map(test => {
             return {
                 DATE: test['DATE'][0],
-                Value: test[selectedIndicator][0]
+                Value: test[selectedIndicator]
             };
         });
     
         // Display results on the screen
         const resultContainer = document.getElementById('resultsContainer');
-        resultContainer.innerHTML = '<h3>Results for ' + selectedIndicator + '</h3>';
+        //resultContainer.innerHTML = '<h4>Results overtime for ' + selectedIndicator + '</h4>';
     
-        for (let entry of blood_indicator_history) {
-            resultContainer.innerHTML += `<p>Date: ${entry.DATE}, Value: ${entry.Value}</p>`;
-        }
+        
+        generateHistogram(blood_indicator_history,selectedIndicator )
+    }
+
+    function generateHistogram(data, selectedIndicator) {
+        d3.select('#histogram').selectAll('*').remove();
+        // Set up margin, width, and height
+        const margin = { top: 50, right: 20, bottom: 70, left: 60 };
+        const width = 800 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
     
-        console.log(blood_indicator_history);
-        return blood_indicator_history;
+        // Create SVG element
+        const svg = d3.select("#histogram")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    
+        // Extract unique values for color mapping
+        const uniqueColors = Array.from(new Set(data.map(entry => entry.Value[1])));
+    
+        // Define color scale
+        const colorScale = d3.scaleOrdinal()
+            .domain(['green', 'yellow', 'red'])
+            .range(['green', '#ffd800', '#c80815']);
+    
+        // Set up X and Y scales
+        const xScale = d3.scaleBand()
+            .domain(data.map(entry => entry.DATE))
+            .range([0, width])
+            .padding(0.1);
+    
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(data, entry => entry.Value[0])])
+            .range([height, 0]);
+    
+        // Add X-axis
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(xScale))
+            .selectAll("text")
+            .style("text-anchor", "end")
+            .attr("transform", "rotate(-45)")
+            .attr("dy", ".35em")
+            .attr("dx", "-.8em")
+            .style("font-size", "13px"); // Adjust the font size as needed
+    
+        // Add Y-axis
+        svg.append("g")
+            .call(d3.axisLeft(yScale))
+            .selectAll("text")
+            .style("font-size", "13px");
+
+    
+        // Add title
+        svg.append("text")
+            .attr("x", width / 2)
+            .attr("y", 0 - margin.top / 2)
+            .attr("text-anchor", "middle")
+            .style("font-size", "20px")
+            .text(`${selectedIndicator} Over Time`);
+    
+        // Add bars
+        svg.selectAll(".bar")
+            .data(data)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", entry => xScale(entry.DATE))
+            .attr("y", entry => yScale(entry.Value[0]))
+            .attr("width", xScale.bandwidth())
+            .attr("height", entry => height - yScale(entry.Value[0]))
+            .attr("fill", entry => colorScale(entry.Value[1]))
+            
+        // Add labels for each bar
+        svg.selectAll(".bar-label")
+            .data(data)
+            .enter().append("text")
+            .attr("class", "bar-label")
+            .attr("x", entry => xScale(entry.DATE) + xScale.bandwidth() / 2)
+            .attr("y", entry => yScale(entry.Value[0]) - 5) // Adjust the vertical position as needed
+            .attr("text-anchor", "middle")
+            .style("font-size", "13px") // Adjust the font size as needed
+            .text(entry => entry.Value[0]);
     }
     
-
     
-
+    
 
 
     let activeButton = null;
