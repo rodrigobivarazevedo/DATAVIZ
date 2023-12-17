@@ -6,6 +6,11 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Load d3.js -->
     <script src="https://d3js.org/d3.v6.js"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    
+
     <style>
         .flexcontainer {
             display: flex;
@@ -23,6 +28,22 @@
             background-color: blue;
             color: white;
         }
+
+        .form-control-file {
+            width: 300; /* Adjust the width of the dropdown */
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            outline: none;
+          }
+          
+          .dropdown_item {
+            width: 300px; /* Adjust the width of the dropdown */
+            padding: 5px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            outline: none;
+          }
     </style>
     
 </head>
@@ -64,15 +85,55 @@
             <div id="pieChart"></div>
         </div>
 
-        <div class="col-md-8" id="heatmap">
+        <div class="col-md-8">
+            <div id="date"></div>
+            <div id="heatmap"></div>
             
         </div>
 
     </div>
 </div>
 
+<div class="container mt-5">
+    <!-- Your dropdown code goes here -->
+    <div class="mt-3">
+        <select id="bloodIndicators" class="form-control dropdown_item">
+            <option disabled selected>Select Blood Indicator over time...</option>
+            <option value="Albumin (g/L)" name="Albumin">Albumin (g/L)</option>
+            <option value="Alanine aminotransferase ALT (U/L)" name="Alanine aminotransferase ALT (U/L)">Alanine aminotransferase ALT (U/L)</option>
+            <option value="Aspartate aminotransferase AST (U/L)" name="Aspartate aminotransferase AST (U/L)">Aspartate aminotransferase AST (U/L)</option>
+            <option value="Alkaline phosphatase (U/L)" name="Alkaline phosphatase (U/L)">Alkaline phosphatase (U/L)</option>
+            <option value="Blood urea nitrogen (mmol/L)" name="Blood urea nitrogen (mmol/L)">Blood urea nitrogen (mmol/L)</option>
+            <option value="Total calcium (mmol/L)" name="Total calcium (mmol/L)">Total calcium (mmol/L)</option>
+            <option value="Creatine Phosphokinase (CPK) (IU/L)" name="Creatine Phosphokinase (CPK) (IU/L)">Creatine Phosphokinase (CPK) (IU/L)</option>
+            <option value="Cholesterol (mmol/L)" name="Cholesterol (mmol/L)">Cholesterol (mmol/L)</option>
+            <option value="Bicarbonate (mmol/L)" name="Bicarbonate (mmol/L)">Bicarbonate (mmol/L)</option>
+            <option value="Creatinine (umol/L)" name="Creatinine (umol/L)">Creatinine (umol/L)</option>
+            <option value="Gamma glutamyl transferase (U/L)" name="Gamma glutamyl transferase (U/L)">Gamma glutamyl transferase (U/L)</option>
+            <option value="Glucose, serum (mmol/L)" name="Glucose, serum (mmol/L)">Glucose, serum (mmol/L)</option>
+            <option value="Iron, refrigerated (umol/L)" name="Iron, refrigerated (umol/L)">Iron, refrigerated (umol/L)</option>
+            <option value="Lactate Dehydrogenase (U/L)" name="Lactate Dehydrogenase (U/L)">Lactate Dehydrogenase (U/L)</option>
+            <option value="Phosphorus (mmol/L)" name="Phosphorus (mmol/L)">Phosphorus (mmol/L)</option>
+            <option value="Total bilirubin (umol/L)" name="Total bilirubin (umol/L)">Total bilirubin (umol/L)</option>
+            <option value="Total protein (g/L)" name="Total protein (g/L)">Total protein (g/L)</option>
+            <option value="Uric acid (umol/L)" name="Uric acid (umol/L)">Uric acid (umol/L)</option>
+            <option value="Sodium (mmol/L)" name="Sodium (mmol/L)">Sodium (mmol/L)</option>
+            <option value="Potassium (mmol/L)" name="Potassium (mmol/L)">Potassium (mmol/L)</option>
+            <option value="Chloride (mmol/L)" name="Chloride (mmol/L)">Chloride (mmol/L)</option>
+            <option value="Osmolality (mmol/Kg)" name="Osmolality (mmol/Kg)">Osmolality (mmol/Kg)</option>
+            <option value="Globulin (g/L)" name="Globulin (g/L)">Globulin (g/L)</option>
+            <option value="Triglycerides (mmol/L)" name="Triglycerides (mmol/L)">Triglycerides (mmol/L)</option>
+        </select>
+    </div>
+</div>
 
 
+<div id="resultsContainer"></div>
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
 <script>
 
@@ -90,6 +151,53 @@
         
         document.querySelector('ul').innerHTML = html;
     });
+    
+    let dropdown = document.getElementById('bloodIndicators');
+    dropdown.addEventListener('change', async function () {
+        try {
+            let response = await fetch('/all_blood_tests/raw/' + input.value);
+            let blood_tests = await response.json();
+            getValuesOverTime(blood_tests, dropdown.value);
+        } catch (error) {
+            console.error('Error fetching or parsing data:', error);
+        }
+    });
+
+    function getValuesOverTime(formattedBloodTests, selectedIndicator) {
+        // Filter blood tests for the selected indicator
+        const filteredTests = formattedBloodTests.filter(test => selectedIndicator in test);
+    
+        // Check if the selected indicator is present in the test
+        if (filteredTests.length === 0) {
+            console.log('No data found for the selected indicator:', selectedIndicator);
+            document.getElementById('resultsContainer').innerHTML = 'No data found for the selected indicator: ' + selectedIndicator;
+            return;
+        }
+    
+        // Extract dates and values for the selected indicator
+        const blood_indicator_history = filteredTests.map(test => {
+            return {
+                DATE: test['DATE'][0],
+                Value: test[selectedIndicator][0]
+            };
+        });
+    
+        // Display results on the screen
+        const resultContainer = document.getElementById('resultsContainer');
+        resultContainer.innerHTML = '<h3>Results for ' + selectedIndicator + '</h3>';
+    
+        for (let entry of blood_indicator_history) {
+            resultContainer.innerHTML += `<p>Date: ${entry.DATE}, Value: ${entry.Value}</p>`;
+        }
+    
+        console.log(blood_indicator_history);
+        return blood_indicator_history;
+    }
+    
+
+    
+
+
 
     let activeButton = null;
 
@@ -160,7 +268,7 @@
 
         // Remove existing SVG element
         d3.select('#heatmap').selectAll('*').remove();
-
+        d3.select('#date').remove();
         fetch(`/blood_tests/raw/${patientID}?date=${date}`, {
             method: 'GET',
             headers: {
@@ -196,7 +304,7 @@
             const cellWidth = 200;
             const cellHeight = 25;
 
-        
+            d3.select('#date').text(`Blood test: ${date}`);
             // Create SVG element
             const svg = d3.select('#heatmap').append('svg')
                 .attr('width', 600) // Increased width to accommodate values on the right
@@ -249,15 +357,7 @@
                 .attr('y2', (d, i) => margin.top + (i + 1) * cellHeight)
                 .style('stroke', 'black');
 
-            // Draw a black line in the middle of the heatmap
-            svg.append('line')
-            .attr('x1', margin.left + cellWidth / 2)
-            .attr('x2', margin.left + cellWidth / 2)
-            .attr('y1', margin.top)
-            .attr('y2', dataArray.length * cellHeight + margin.top)
-            .style('stroke', 'black');
-
-
+            
             // Add text elements to display values and metric units on the right side of the heatmap
             svg.selectAll('.value-text')
             .data(dataArray)
@@ -269,7 +369,7 @@
             .style('fill', 'black')
             .text(d => `${d.value} ${d.key.split(/\s+/).pop()}`); // Only display the last part of the key
 
-            drawReferenceLines(svg, margin, cellWidth, dataArray.length, cellHeight, combined_dict);
+            
 
         })
         .catch(error => {
