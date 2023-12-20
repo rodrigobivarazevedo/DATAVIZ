@@ -48,7 +48,7 @@
     
 </head>
 <body>
-<div class="container mt-5">
+<div class="container mt-3">
     <h1 class="mb-4">Blood Tests Visualization App</h1>
 
     <div class="row">
@@ -60,13 +60,12 @@
                 </div>
                 <div class="card-body">
                     
-                    <form id="patientInfoForm" onsubmit="searchPatient(); return false;" method="post" style="padding-top: 20px;">
+                    <form id="patientInfoForm"  style="padding-top: 20px;">
                         <!-- Prevents default form submission -->
                         <div class="form-group">
                             <label for="patientIDPatientInfo">Patient ID</label>
                             <input type="text" class="form-control" id="patientIDPatientInfo" name="patientIDPatientInfo" placeholder="Enter patient ID">
                         </div>
-                        <button type="submit" class="btn btn-primary mt-3">Get Patient Info</button>
                     </form>
                 </br>
                     <div id="patientInfo"></div>
@@ -132,26 +131,83 @@
     <div id="histogram"></div>
 </div>
 
+<div class="mt-3" id="resultsContainer"></div>
+    <div id="histogram"></div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-<script>
 
+
+<script>
     
     
     let input = document.getElementById('patientIDPatientInfo');
     input.addEventListener('input', async function () {
-        let response = await fetch('/blood_dates?q=' + input.value);
+        // Get values from form inputs
+        var patientID = input.value;
+
+        // Check if there is no input
+        if (!patientID) {
+            // Clear patient information and blood test dates if no input
+            document.getElementById('patientInfo').innerHTML = '';
+            document.querySelector('ul').innerHTML = '';
+            return;
+        }
+
+        // Use JavaScript to fetch patient data
+        const patientData = await fetchPatientData(patientID);
+
+        // Display patient information
+        displayPatientInfo(patientData);
+
+        // Fetch and display blood dates
+        let response = await fetch('/blood_dates?q=' + patientID);
         let dates = await response.json();
         let html = '';
         for (let date of dates) {
-            // Add a button element with an onclick event to handle the HTTP request
-            html += `<li><button class="date-button" onclick="drawHeatmap('${input.value}', '${date.DATE}'); toggleButton(this); return false;">${date.DATE}</button></li>`;
+            html += `<li><button class="date-button" onclick="drawHeatmap('${patientID}', '${date.DATE}'); toggleButton(this); return false;">${date.DATE}</button></li>`;
         }
-        
+
         document.querySelector('ul').innerHTML = html;
     });
+
+    async function fetchPatientData(patientID) {
+        const url = `/${patientID}/raw`;
+
+        try {
+            const response = await fetch(url, { method: 'POST' });
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        } catch (error) {
+            console.error('Error fetching patient data:', error);
+            // Handle errors here, e.g., display an error message to the user
+        }
+    }
+
+    function displayPatientInfo(data) {
+        if (data && data.length > 0) {
+            const patientInfo = data[0];
+            const patientInfoHtml = `
+                <p><strong>Patient ID:</strong> ${patientInfo.ID}</p>
+                <p><strong>First Name:</strong> ${patientInfo.FIRST_NAME}</p>
+                <p><strong>Last Name:</strong> ${patientInfo.LAST_NAME}</p>
+                <p><strong>Birth Date:</strong> ${patientInfo.BIRTH_DATE}</p>
+                <p><strong>Gender:</strong> ${patientInfo.GENDER}</p>
+                <p><strong>Age:</strong> ${patientInfo.AGE}</p>
+            `;
+            document.getElementById('patientInfo').innerHTML = patientInfoHtml;
+        } else {
+            // Clear patient information if there's no data
+            document.getElementById('patientInfo').innerHTML = '';
+        }
+    }
+
+
     
     let dropdown = document.getElementById('bloodIndicators');
     dropdown.addEventListener('change', async function () {
@@ -194,8 +250,8 @@
     function generateHistogram(data, selectedIndicator) {
         d3.select('#histogram').selectAll('*').remove();
         // Set up margin, width, and height
-        const margin = { top: 50, right: 20, bottom: 70, left: 60 };
-        const width = 800 - margin.left - margin.right;
+        const margin = { top: 50, right: 20, bottom: 100, left: 40 };
+        const width = 700 - margin.left - margin.right;
         const height = 400 - margin.top - margin.bottom;
     
         // Create SVG element
@@ -233,21 +289,20 @@
             .attr("transform", "rotate(-45)")
             .attr("dy", ".35em")
             .attr("dx", "-.8em")
-            .style("font-size", "13px"); // Adjust the font size as needed
+            .style("font-size", "12px"); // Adjust the font size as needed
     
         // Add Y-axis
         svg.append("g")
             .call(d3.axisLeft(yScale))
             .selectAll("text")
-            .style("font-size", "13px");
-
+            .style("font-size", "12px");
     
         // Add title
         svg.append("text")
             .attr("x", width / 2)
             .attr("y", 0 - margin.top / 2)
             .attr("text-anchor", "middle")
-            .style("font-size", "20px")
+            .style("font-size", "16px")
             .text(`${selectedIndicator} Over Time`);
     
         // Add bars
@@ -257,10 +312,10 @@
             .attr("class", "bar")
             .attr("x", entry => xScale(entry.DATE))
             .attr("y", entry => yScale(entry.Value[0]))
-            .attr("width", xScale.bandwidth())
+            .attr("width", xScale.bandwidth()) 
             .attr("height", entry => height - yScale(entry.Value[0]))
             .attr("fill", entry => colorScale(entry.Value[1]))
-            
+    
         // Add labels for each bar
         svg.selectAll(".bar-label")
             .data(data)
@@ -269,9 +324,10 @@
             .attr("x", entry => xScale(entry.DATE) + xScale.bandwidth() / 2)
             .attr("y", entry => yScale(entry.Value[0]) - 5) // Adjust the vertical position as needed
             .attr("text-anchor", "middle")
-            .style("font-size", "13px") // Adjust the font size as needed
+            .style("font-size", "12px") // Adjust the font size as needed
             .text(entry => entry.Value[0]);
     }
+    
     
     
     
@@ -294,52 +350,7 @@
 
 
 
-    function searchPatient() {
-        // Get values from form inputs
-        var patientID = document.getElementById('patientIDPatientInfo').value;
-
-        // Use JavaScript to fetch data from the Flask route
-        const url = `/${patientID}/raw`;
-
-        fetch(url, {
-            method: 'POST', // Use POST method
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log(data);
-
-                // Check if data is not an empty list
-                if (data.length > 0) {
-                    const patientInfo = data[0]; // Assuming there's only one element in the list
-
-                    // Construct HTML to display patient information
-                    const patientInfoHtml = `
-                        <p><strong>Patient ID:</strong> ${patientInfo.ID}</p>
-                        <p><strong>First Name:</strong> ${patientInfo.FIRST_NAME}</p>
-                        <p><strong>Last Name:</strong> ${patientInfo.LAST_NAME}</p>
-                        <p><strong>Birth Date:</strong> ${patientInfo.BIRTH_DATE}</p>
-                        <p><strong>Gender:</strong> ${patientInfo.GENDER}</p>
-                        <p><strong>Age:</strong> ${patientInfo.AGE}</p>
-                    `;
-
-                    // Display patient information in the HTML
-                    document.getElementById('patientInfo').innerHTML = patientInfoHtml;
-                } else {
-                    // Handle the case where the data list is empty
-                    console.error('Empty response data.');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching patient data:', error);
-                // Add error handling here, e.g., display an error message to the user
-            });
-    }
-
+    
 
 
     function drawHeatmap(patientID, date) {

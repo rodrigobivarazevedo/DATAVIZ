@@ -12,7 +12,7 @@
         <input type="number" id="userInput" step="any" placeholder="User Value">
         <button onclick="updateBoxPlot()">Update Box Plot</button>
     </div>
-    <div id="my_dataviz"></div>
+    <div id="box-plot"></div>
 
     <script>
         // Example data
@@ -31,7 +31,7 @@
             height = 200 - margin.top - margin.bottom;
     
         // append the svg object to the body of the page
-        var svg = d3.select("#my_dataviz")
+        var svg = d3.select("#box-plot")
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
