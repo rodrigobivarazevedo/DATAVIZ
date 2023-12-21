@@ -4,7 +4,7 @@ import requests
 from cs50 import SQL
 from healthy_levels import healthy_levels_young_adults, older_adults_reference_ranges, older_elderly_reference_ranges
 from blood_functions import color_mapping, transform_to_fhir_blood_test, color_percentages
-
+from summary_stats import summary_stats
 
 app2 = Flask(__name__)
 db = SQL("sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db")
@@ -136,7 +136,6 @@ def get_blood_tests_raw(patientID):
     reference_ranges = get_blood_tests_references(patient_age)
             
     colored_blood_test_data = [color_mapping(blood_test, reference_ranges) for blood_test in formated_blood_tests]
-    print(colored_blood_test_data)
     combined_dict = {}
     for key, values in colored_blood_test_data[0].items():
         if key in reference_ranges:
@@ -267,7 +266,19 @@ def blood_tests_raw(patientID):
         
         return jsonify(colored_blood_test_data_all)
 
-
+@app2.route('/statistics/<string:blood_indicator>', methods=['GET'])
+def statistics(blood_indicator):
+    # Check if the blood indicator is in the summary_stats dictionary
+    if blood_indicator in summary_stats:
+        # Retrieve the statistics for the given blood indicator
+        blood_stats = summary_stats[blood_indicator]
+        # Return the statistics as JSON
+        return jsonify(blood_stats)
+    else:
+        # If the blood indicator is not found, return an error message
+        return jsonify({"error": "Blood indicator not found"}), 404
+    
+    
 
 
 
