@@ -35,7 +35,7 @@ healthy_levels_young_adults = {
     "Chloride (mmol/L)": {"min": 96, "max": 106},
     "Osmolality (mmol/Kg)": {"min": 275, "max": 295},
     "Globulin (g/dL)": {"min": 2.3, "max": 3.5},
-    "Globulin (g/L)": {"min": 2.3, "max": 3.5},
+    "Globulin (g/L)": {"min": 26, "max": 35},
     "Triglycerides (mg/dL)": {"min": 30, "max": 150},
     "Triglycerides (mmol/L)": {"min": 0.34, "max": 1.69}
 }

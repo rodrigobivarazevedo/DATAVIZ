@@ -164,77 +164,74 @@
     }
 
     // Function to draw the box plot
-    function drawBoxPlot(data, userInput) {
-        console.log(data);
+function drawBoxPlot(data, userInput) {
+    console.log(data);
+    // set the dimensions and margins of the graph
+    var margin = { top: 50, right: 40, bottom: 30, left: 10 },
+        width = 400 - margin.left - margin.right,
+        height = 200 - margin.top - margin.bottom;
 
-        // set the dimensions and margins of the graph
-        var margin = { top: 50, right: 40, bottom: 30, left: 10 },
-            width = 400 - margin.left - margin.right,
-            height = 200 - margin.top - margin.bottom;
+    // append the svg object to the body of the page
+    var svg = d3.select("#box-plot")
+        .html("")  // Clear previous content
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        // Select existing svg or create a new one
-        var svg = d3.select("#box-plot svg");
-        if (svg.empty()) {
-            svg = d3.select("#box-plot")
-                .append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-        } else {
-            // Clear existing content
-            svg.selectAll("*").remove();
-        }
+    // Compute summary statistics used for the box
+    var q1 = data.q1;
+    var median = data.median;
+    var q3 = data.q3;
+    var iqr = data.iqr;
 
-        // Compute summary statistics used for the box
-        var q1 = data.q1;
-        var median = data.median;
-        var q3 = data.q3;
-        var interQuantileRange = q3 - q1;
-        var min = Math.max(q1 - 1.5 * interQuantileRange, data.min_value);
-        var max = Math.min(q3 + 1.5 * interQuantileRange, data.max_value);
+    // Use lower_bound and upper_bound directly
+    var min = data.lower_bound;
+    var max = data.upper_bound;
 
-        // Show the X scale
-        var x = d3.scaleLinear()
-            .domain([data.min_value, data.max_value])
-            .range([0, width]);
-        svg.call(d3.axisBottom(x));
+    // Show the X scale with dynamic domain
+    var x = d3.scaleLinear()
+        .domain([min, max])
+        .range([0, width]);
+    svg.call(d3.axisBottom(x));
 
-        // a few features for the box
-        var center = height / 2;
-        var boxHeight = 50;
+    // a few features for the box
+    var center = height / 2;
+    var boxHeight = 50;
 
-        // Show the main horizontal line
-        svg.append("line")
-            .attr("class", "main-line")
-            .attr("y1", center)
-            .attr("y2", center)
-            .attr("x1", x(min))
-            .attr("x2", x(max))
-            .attr("stroke", "#333"); // Dark gray
+    // Show the main horizontal line
+    svg.append("line")
+        .attr("class", "main-line")
+        .attr("y1", center)
+        .attr("y2", center)
+        .attr("x1", x(min))
+        .attr("x2", x(max))
+        .attr("stroke", "#333"); // Dark gray
 
-        // Show the box
-        svg.append("rect")
-            .attr("class", "box")
-            .attr("y", center - boxHeight / 2)
-            .attr("x", x(q1))
-            .attr("width", (x(q3) - x(q1)))
-            .attr("height", boxHeight)
-            .attr("stroke", "#333") // Dark gray
-            .style("fill", "#ddd"); // Light gray
+    // Show the box
+    svg.append("rect")
+        .attr("class", "box")
+        .attr("y", center - boxHeight / 2)
+        .attr("x", x(q1))
+        .attr("width", (x(q3) - x(q1)))
+        .attr("height", boxHeight)
+        .attr("stroke", "#333") // Dark gray
+        .style("fill", "#ddd"); // Light gray
 
-        // Show median, min, max, and user input vertical lines
-        svg.selectAll(".lines")
-            .data([min, median, max, userInput])
-            .enter()
-            .append("line")
-            .attr("class", "lines")
-            .attr("y1", center - boxHeight / 2)
-            .attr("y2", center + boxHeight / 2)
-            .attr("x1", function (d) { return x(d); })
-            .attr("x2", function (d) { return x(d); })
-            .attr("stroke", function (d) { return (d === userInput) ? "red" : "#666"; }); // White for user input, Dark gray for others
-    }
+    // Show median, min, max, and user input vertical lines
+    svg.selectAll(".lines")
+        .data([min, median, max, userInput])
+        .enter()
+        .append("line")
+        .attr("class", "lines")
+        .attr("y1", center - boxHeight / 2)
+        .attr("y2", center + boxHeight / 2)
+        .attr("x1", function (d) { return x(d); })
+        .attr("x2", function (d) { return x(d); })
+        .attr("stroke", function (d) { return (d === userInput) ? "red" : "#666"; }); // White for user input, Dark gray for others
+}
+
 
     
     let input = document.getElementById('patientIDPatientInfo');
