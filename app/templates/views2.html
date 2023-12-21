@@ -82,13 +82,7 @@
 <!-- Create a div where the graphs will take place -->
         <div class="col-md-3">
             <div id="pieChart"></div>
-            <div class="mt-5">
-                <label for="userInput2">Demographic Distribution:</label>
-                <input class="mt-2" type="text" id="userInput2" step="any" placeholder="Type Blood Indicator">
-                <input class="mt-2"type="number" id="userInput" step="any" placeholder="Type Blood Level">
-                <button class="mt-2" onclick="updateBoxPlot()">Update Box Plot</button>
-                <div id="box-plot"></div>
-            </div>
+            <div class="mt-3" id="warnings"></div>
 
         </div>
 
@@ -138,16 +132,22 @@
 
     <!-- Histogram and Mean Row -->
     <div class="row mt-3">
-        <div class="col-md-8">
+        <div class="col-md-9">
             <div id="resultsContainer">
                 <div id="histogram"></div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="mt-3" id="mean">
-                <!-- Content for the mean div -->
+        <div class="col-md-3">
+            <div class="mt-3" id="mean"></div>
+            <div>
+                <label for="userInput2">Demographic Distribution:</label>
+                <input class="mt-2" type="text" id="userInput2" step="any" placeholder="Type Blood Indicator">
+                <input class="mt-2"type="number" id="userInput" step="any" placeholder="Type Blood Level">
+                <button class="mt-2" onclick="updateBoxPlot()">Update Box Plot</button>
+                <div id="box-plot"></div>
             </div>
         </div>
+        
     </div>
 </div>
 
@@ -583,7 +583,7 @@ function drawBoxPlot(data, userInput) {
             .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
             .attr('dy', '0.20em')
             .style('fill', 'black')
-            .text(d => `${d.value} ${d.key.split(/\s+/).pop()}`); // Only display the last part of the key
+            .text(d => `${d.value} ${d.key.split(/\s+/).pop()}`); 
 
             
 
@@ -594,32 +594,120 @@ function drawBoxPlot(data, userInput) {
         });
 }
 
-    
+    function displayRedBloodIndicatorInfo(redIndicators) {
+        // Define information for each blood indicator
+        const bloodIndicatorInfo = {
+            "Alanine aminotransferase (ALT)": {
+                info: "High levels can be an indication of liver damage.",
+            },
+            "Albumin": {
+                info: "Abnormal levels can be caused by liver or kidney problems.",
+            },
+            "Total protein": {
+                info: "Low protein levels can indicate various conditions, including liver and kidney disorders and malnutrition, while high levels can be a sign of inflammation, infection, or bone marrow disorder.",
+            },
+            "Alkaline phosphatase": {
+                info: "Results outside of the normal levels can signal liver damage and bone problems such as rickets or bone tumors.",
+            },
+            "Aspartate aminotransferase": {
+                info: "Results above the healthy range indicating a variety of conditions, including some types of cancer, as well as liver, heart, or kidney damage.",
+            },
+            "Bilirubin": {
+                info: "Warning for kidney and liver dysfunction.Possible outcomes: neonatal jaundice, anemia, and liver diseases.",
+            },
+            "Blood urea nitrogen": {
+                info: "High levels can be caused by kidney damage or disease, while low levels may be a sign of malnutrition or severe liver damage.",
+            },
+            "Calcium": {
+                info: "Calcium low levels can indicate under-active parathyroid glands, insufficient calcium in your diet, or Vit D insufficiency, and other less common conditions. High levels can indicate conditions including over-active parathyroid glands, excessive Vit D supplementation, kidney problems as well as more concerning causes that usually require further investigation. Proper interpretation of calcium levels often requires testing of other parameters such as total serum protein and albumin.",
+            },
+            "Chloride": {
+                info: "An increased level of chloride can indicate dehydration as well as kidney disorders and adrenal gland dysfunction.",
+            },
+            "Creatinine": {
+                info: "Increased levels of creatinine can be a sign of kidney dysfunction.",
+            },
+            "Glucose, serum": {
+                info: "Abnormal levels results can indicate diabetes, among other medical conditions.",
+            },
+            "Phosphorus": {
+                info: "Elevated levels can indicate problems with the kidneys and parathyroid glands, and they may be a sign of malnutrition or alcohol abuse.",
+            },
+            "Potassium": {
+                info: "Potassium aids the communication between nerves and muscles, regulates the heart and maintains muscle function. Diuretics (a substance or medication used to increase urination) can cause potassium levels to fall.",
+            },
+            "Sodium": {
+                info: "Irregularities are a possible indication of dehydration, adrenal gland disorders, corticosteroids, and kidney or liver disorders.",
+            },
+            
+        };
 
+        // Get the div where warnings will be displayed
+        const warningsDiv = document.getElementById("warnings");
+        // Clear existing warnings
+        warningsDiv.innerHTML = '';
+        
+        // Iterate over the red indicators and display the information
+        redIndicators.forEach(indicator => {
+            // Check if the indicator exists in bloodIndicatorInfo
+            indicator = indicator.split(' ').slice(0, -1).join(' ');
+            if (bloodIndicatorInfo[indicator]) {
+                const indicatorInfo = bloodIndicatorInfo[indicator];
+
+                // Create a new paragraph element to display the information
+                const paragraph = document.createElement("p");
+                // Set the color of the text to red
+                paragraph.style.color = "red";
+                paragraph.textContent = `${indicator}: ${indicatorInfo.info}`;
+                
+                // Append the paragraph to the warnings div
+                warningsDiv.appendChild(paragraph);
+            } else {
+                console.warn(`Information not available for blood indicator: ${indicator}`);
+            }
+        });
+}
+        
     function calculateColorPercentages(blood_test) {
-    let green = 0.0;
-    let yellow = 0.0;
-    let red = 0.0;
 
-    // Iterate over the properties of the blood_test object
-    for (const key of Object.keys(blood_test)) {
-        const color = blood_test[key][1];
+        let redIndicators = [];
 
-        if (color === "green") {
-            green += 1;
+        // Iterate over the properties of the blood_test object
+        for (const key of Object.keys(blood_test)) {
+            const color = blood_test[key][1];
+            
+            // Check if the color is red
+            if (color === "red") {
+                redIndicators.push(key);
+            }
         }
-        if (color === "yellow") {
-            yellow += 1;
-        }
-        if (color === "red") {
-            red += 1;
-        }
-    }
+    
+        // Call function to display blood indicator info
+        displayRedBloodIndicatorInfo(redIndicators);
 
-    const totalIndicators = 22;
-    const percentages = [green / totalIndicators, yellow / totalIndicators, red / totalIndicators];
+        let green = 0.0;
+        let yellow = 0.0;
+        let red = 0.0;
 
-    return percentages;
+        // Iterate over the properties of the blood_test object
+        for (const key of Object.keys(blood_test)) {
+            const color = blood_test[key][1];
+
+            if (color === "green") {
+                green += 1;
+            }
+            if (color === "yellow") {
+                yellow += 1;
+            }
+            if (color === "red") {
+                red += 1;
+            }
+        }
+
+        const totalIndicators = 22;
+        const percentages = [green / totalIndicators, yellow / totalIndicators, red / totalIndicators];
+
+        return percentages;
 }
 
 
