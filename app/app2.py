@@ -132,8 +132,8 @@ def get_blood_tests_raw(patientID):
             'Triglycerides (mmol/L)': blood_test['Triglycerides_mmol_L']
         })
     
-    patient_age = get_patient_raw(patientID)[0]["AGE"]
-    reference_ranges = get_blood_tests_references(patient_age)
+
+    reference_ranges = get_blood_tests_references(patientID)
             
     colored_blood_test_data = [color_mapping(blood_test, reference_ranges) for blood_test in formated_blood_tests]
     combined_dict = {}
@@ -143,15 +143,18 @@ def get_blood_tests_raw(patientID):
     
     return jsonify(combined_dict)
 
-@app2.route('/blood_tests_references/raw/<int:age>', methods=['GET'])
-def get_blood_tests_references(age):
-    if 20 <= age <= 39:
+@app2.route('/blood_tests_references/raw/<int:patientID>', methods=['GET'])
+def get_blood_tests_references(patientID):
+    
+    patient_age = get_patient_raw(patientID)[0]["AGE"]
+    
+    if 20 <= patient_age <= 39:
         reference_ranges = healthy_levels_young_adults
         
-    elif 40 <= age < 65:
+    elif 40 <= patient_age < 65:
         reference_ranges = older_adults_reference_ranges
         
-    elif age >= 65:
+    elif patient_age >= 65:
         reference_ranges = older_elderly_reference_ranges
     
     return reference_ranges
@@ -201,8 +204,7 @@ def blood_tests_raw(patientID):
             'Triglycerides (mmol/L)': blood_test['Triglycerides_mmol_L']
         })
 
-        patient_age = get_patient_raw(patientID)[0]["AGE"]
-        reference_ranges = get_blood_tests_references(patient_age)
+        reference_ranges = get_blood_tests_references(patientID)
 
         colored_blood_test_data = [color_mapping(blood_test, reference_ranges) for blood_test in formated_blood_tests]
 
@@ -256,7 +258,7 @@ def blood_tests_raw(patientID):
 
 
         # Similar to the logic for a specific date, you can proceed with coloring, combining, etc.
-        reference_ranges_all = get_blood_tests_references(get_patient_raw(patientID)[0]["AGE"])
+        reference_ranges_all = get_blood_tests_references(patientID)
         colored_blood_test_data_all = [color_mapping(blood_test_all, reference_ranges_all) for blood_test_all in formatted_blood_tests_all]
         
         combined_dict_all = {}
@@ -268,6 +270,8 @@ def blood_tests_raw(patientID):
 
 @app2.route('/statistics/<string:blood_indicator>', methods=['GET'])
 def statistics(blood_indicator):
+    
+    blood_indicator = blood_indicator.capitalize()
     # Check if the blood indicator is in the summary_stats dictionary
     if blood_indicator in summary_stats:
         # Retrieve the statistics for the given blood indicator
