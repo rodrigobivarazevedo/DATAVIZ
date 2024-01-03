@@ -479,8 +479,7 @@ function drawBoxPlot(data, userInput) {
             // Convert data to suitable format
             const dataArray = [];
             const dict = data; // Assuming there's only one dictionary in the list
-            red_indictors = FindRedIndicators(dict)
-            console.log(red_indictors)
+            FindRedIndicators(dict)
 
             // Iterate over the dictionary entries
             for (const [key, [value, color]] of Object.entries(dict)) {
@@ -570,81 +569,59 @@ function drawBoxPlot(data, userInput) {
 
     function displayRedBloodIndicatorInfo(redIndicators) {
         // Define information for each blood indicator
-        const bloodIndicatorInfo = {
-            "Alanine aminotransferase ALT": {
-                info: "High levels can be an indication of liver damage.",
-            },
-            "Albumin": {
-                info: "Abnormal levels can be caused by liver or kidney problems.",
-            },
-            "Total protein": {
-                info: "Low protein levels can indicate various conditions, including liver and kidney disorders and malnutrition, while high levels can be a sign of inflammation, infection, or bone marrow disorder.",
-            },
-            "Alkaline phosphatase": {
-                info: "Results outside of the normal levels can signal liver damage and bone problems such as rickets or bone tumors.",
-            },
-            "Aspartate aminotransferase AST": {
-                info: "Results above the healthy range indicating a variety of conditions, including some types of cancer, as well as liver, heart, or kidney damage.",
-            },
-            "Total bilirubin": {
-                info: "Warning for kidney and liver dysfunction.Possible outcomes: neonatal jaundice, anemia, and liver diseases.",
-            },
-            "Blood urea nitrogen": {
-                info: "High levels can be caused by kidney damage or disease, while low levels may be a sign of malnutrition or severe liver damage.",
-            },
-            "Bicarbonate": {
-                info: "Aberrations in bicarbonate levels, whether low due to conditions like kidney disease or diabetic ketoacidosis or high from factors like vomiting or kidney disorders, pose risks such as disruptions in bodily functions, impaired nerve-muscle coordination, and potential electrolyte imbalances.",
-            },
-            "Total calcium": {
-                info: "Calcium low levels can indicate under-active parathyroid glands, insufficient calcium in your diet, or Vit D insufficiency, and other less common conditions. High levels can indicate conditions including over-active parathyroid glands, excessive Vit D supplementation, kidney problems as well as more concerning causes that usually require further investigation. Proper interpretation of calcium levels often requires testing of other parameters such as total serum protein and albumin.",
-            },
-            "Chloride": {
-                info: "An increased level of chloride can indicate dehydration as well as kidney disorders and adrenal gland dysfunction.",
-            },
-            "Cholesterol": {
-                info: "Abnormal cholesterol levels, whether elevated due to factors like poor diet or genetics or lowered as a result of certain medical conditions, can pose risks such as cardiovascular issues, impaired artery function, and increased susceptibility to heart-related complications.",
-            },
-            "Creatinine": {
-                info: "Increased levels of creatinine can be a sign of kidney dysfunction.",
-            },
-            "Creatine Phosphokinase (CPK)": {
-                info: "Deviations in Creatine Phosphokinase (CPK) levels, whether heightened due to muscle injury or heart issues or diminished as a result of certain medications or genetic factors, can pose risks such as muscle damage, cardiac complications, and potential adverse effects related to the underlying causes.",
-            },
-            "Glucose, serum": {
-                info: "Abnormal levels results can indicate diabetes, among other medical conditions.",
-            },
-            "Gamma glutamyl transferase": {
-                info: "Fluctuations in Gamma Glutamyl Transferase (GGT) levels, whether elevated due to liver conditions or excessive alcohol consumption, or reduced as a result of certain medications or dietary factors, can pose risks such as liver dysfunction, potential complications related to alcohol abuse, and impacts on overall metabolic health.",
-            },
-            "Globulin": {
-                info: "Abnormalities in Globulin levels, whether increased due to inflammatory conditions or decreased as a result of malnutrition or certain immune disorders, can pose risks such as compromised immune function, potential organ damage, and susceptibility to infections or autoimmune complications.",
-            },
-            "Phosphorus": {
-                info: "Elevated levels can indicate problems with the kidneys and parathyroid glands, and they may be a sign of malnutrition or alcohol abuse.",
-            },
-            "Potassium": {
-                info: "Potassium aids the communication between nerves and muscles, regulates the heart and maintains muscle function. Diuretics (a substance or medication used to increase urination) can cause potassium levels to fall.",
-            },
-            "Sodium": {
-                info: "Irregularities are a possible indication of dehydration, adrenal gland disorders, corticosteroids, and kidney or liver disorders.",
-            },
-            "Iron, refrigerated": {
-                info: "Iron, when refrigerated, remains stable and does not undergo significant changes in its properties or efficacy, ensuring its suitability for various applications without risks associated with alterations in composition or effectiveness.",
-            },
-            "Lactate Dehydrogenase": {
-                info: "Changes in Lactate Dehydrogenase (LDH) levels, whether elevated due to tissue damage or reduced as a result of certain medical treatments, can pose risks such as cellular dysfunction, potential organ damage, and implications related to the underlying health conditions.",
-            },
-            "Osmolality": {
-                info: "Fluctuations in osmolality levels, whether increased due to dehydration or decreased as a result of overhydration, can pose risks such as impaired cellular function, potential electrolyte imbalances, and complications related to the body's fluid balance.",
-            },
-            "Triglycerides": {
-                info: "Abnormalities in Triglyceride levels, whether elevated due to factors like poor diet or genetic predisposition, or lowered as a result of lifestyle modifications or medication, can pose risks such as cardiovascular issues, compromised lipid metabolism, and increased susceptibility to heart-related complications.",
-            },
-            "Uric acid": {
-                info: "Deviation in Uric Acid levels, whether elevated due to conditions like gout or kidney dysfunction, or reduced as a result of certain medications or dietary changes, can pose risks such as joint inflammation, potential kidney damage, and complications associated with the underlying health conditions.",
-            },
-            
-        };
+        const bloodIndicatorKnowledgeBase = {
+            "Alanine aminotransferase ALT": ["Liver health"],
+            "Albumin": ["Liver function", "Kidney function"],
+            "Alkaline phosphatase": ["Liver health", "Bone health"],
+            "Aspartate aminotransferase AST": ["Liver health", "Heart health"],
+            "Bicarbonate": ["Acid-base balance"],
+            "Blood urea nitrogen": ["Kidney function"],
+            "Chloride": ["Electrolyte balance", "Kidney function"],
+            "Cholesterol": ["Cardiovascular health"],
+            "Creatine Phosphokinase (CPK)": ["Muscle health", "Heart health"],
+            "Creatinine": ["Kidney function"],
+            "Gamma glutamyl transferase": ["Liver health", "Bile ducts"],
+            "Globulin": ["Immune function"],
+            "Glucose, serum": ["Blood sugar levels", "Diabetes"],
+            "Iron, refrigerated": ["Iron levels in the body"],
+            "Lactate Dehydrogenase": ["Tissue damage"],
+            "Osmolality": ["Blood particle concentration"],
+            "Phosphorus": ["Bone health", "Kidney function"],
+            "Potassium": ["Heart function", "Muscle function"],
+            "Sodium": ["Fluid balance", "Nerve function", "Muscle function"],
+            "Total bilirubin": ["Liver function"],
+            "Total calcium": ["Bone health", "Muscle function"],
+            "Total protein": [""],
+            "Triglycerides": ["Cardiovascular health"],
+            "Uric acid": ["Gout", "Joint health"]
+          };
+          
+          const bloodIndicatorsRelationships = {
+              "Alanine aminotransferase ALT": ["Albumin", "Aspartate aminotransferase AST", "Total Bilirubin"],
+              "Albumin": ["Globulin", "Alanine aminotransferase", "Blood urea nitrogen"],
+              "Alkaline phosphatase": ["Alanine aminotransferase ALT", "Aspartate aminotransferase AST", "Gamma Glutamyl Transferase (GGT)"],
+              "Aspartate aminotransferase AST": ["Alanine aminotransferase ALT", "Albumin", "Total Bilirubin"],
+              "Bicarbonate": ["Chloride", "Sodium", "Potassium"],
+              "Blood urea nitrogen": ["Creatinine", "Albumin", "Chloride"],
+              "Chloride": ["Bicarbonate", "Sodium", "Potassium"],
+              "Cholesterol": ["Triglycerides", "High-Density Lipoprotein (HDL)", "Low-Density Lipoprotein (LDL)"],
+              "Creatine Phosphokinase (CPK)": ["Lactate Dehydrogenase (LDH)", "Aspartate aminotransferase AST", "Alanine aminotransferase ALT"],
+              "Creatinine": ["Blood urea nitrogen", "Phosphorus", "Potassium"],
+              "Gamma Glutamyl Transferase": ["Alkaline phosphatase", "ALT", "Aspartate aminotransferase AST"],
+              "Globulin": ["Albumin", "Total Protein", "A/G Ratio"],
+              "Glucose, serum": ["Hemoglobin A1c", "Insulin", "C-Peptide"],
+              "Iron, refrigerated": ["Total Iron Binding Capacity (TIBC)", "Transferrin", "Ferritin"],
+              "Lactate Dehydrogenase": ["Creatine Phosphokinase CPK", "Aspartate aminotransferase AST", "Alanine aminotransferase ALT"],
+              "Osmolality": ["Sodium", "Potassium", "Chloride"],
+              "Phosphorus": ["Calcium", "Vitamin D", "Parathyroid Hormone (PTH)"],
+              "Potassium": ["Sodium", "Chloride", "Bicarbonate"],
+              "Sodium": ["Potassium", "Chloride", "Bicarbonate"],
+              "Total bilirubin": ["Aspartate aminotransferase AST", "Alanine aminotransferase ALT", "Alkaline phosphatase"],
+              "Total calcium": ["Ionized Calcium", "Vitamin D", "Parathyroid Hormone (PTH)"],
+              "Total protein": ["Albumin", "Globulin", "A/G Ratio"],
+              "Triglycerides": ["Cholesterol", "High-Density Lipoprotein (HDL)", "Low-Density Lipoprotein (LDL)"],
+              "Uric acid": ["Potassium", "Sodium", "Chloride"]
+          };
 
         // Get the div where warnings will be displayed
         const warningsDiv = document.getElementById("warnings");
@@ -652,11 +629,14 @@ function drawBoxPlot(data, userInput) {
         warningsDiv.innerHTML = '';
 
         // Iterate over the red indicators and display the information
-        redIndicators.forEach(indicator => {
+        redIndicators.forEach(originalIndicator => {
+            // Create a copy of the indicator for display purposes
+            const indicator = originalIndicator.split(' ').slice(0, -1).join(' ');
+
             // Check if the indicator exists in bloodIndicatorInfo
-            indicator = indicator.split(' ').slice(0, -1).join(' ');
-            if (bloodIndicatorInfo[indicator]) {
-                const indicatorInfo = bloodIndicatorInfo[indicator];
+            if (bloodIndicatorKnowledgeBase[indicator]) {
+                const indicatorInfo = bloodIndicatorKnowledgeBase[indicator];
+                const relationships = bloodIndicatorsRelationships[indicator];
 
                 // Create a new paragraph element for the indicator
                 const indicatorParagraph = document.createElement("p");
@@ -672,21 +652,29 @@ function drawBoxPlot(data, userInput) {
                 // Append the indicator paragraph to the warnings div
                 warningsDiv.appendChild(indicatorParagraph);
 
-                // Create a new paragraph element for the indicatorInfo
+                // Create a new paragraph element for the information
                 const infoParagraph = document.createElement("p");
 
-                // Create a span for the indicatorInfo
-                const indicatorInfoSpan = document.createElement("span");
-                indicatorInfoSpan.textContent = ` ${indicatorInfo.info}`;
-                indicatorInfoSpan.style.display = "none"; // Initially hide the info
+                // Create a span for the relationships information
+                const relationshipsSpan = document.createElement("span");
+                relationshipsSpan.innerHTML = `<strong>Possible Deficiencies:</strong> ${relationships.join(', ')}<br>`;
+                relationshipsSpan.style.display = "none"; // Initially hide the relationships info
+
+                // Create a span for the possible deficiencies information
+                const deficienciesSpan = document.createElement("span");
+                deficienciesSpan.innerHTML = `<strong>Relationships:</strong> ${indicatorInfo.join(', ')}<br>`;
+                deficienciesSpan.style.display = "none"; // Initially hide the deficiencies info
 
                 // Add event listener to toggle visibility on click
                 indicatorButton.addEventListener("click", function () {
-                    indicatorInfoSpan.style.display = (indicatorInfoSpan.style.display === "none") ? "inline" : "none";
+                    // Toggle visibility for both spans
+                    relationshipsSpan.style.display = (relationshipsSpan.style.display === "none") ? "inline" : "none";
+                    deficienciesSpan.style.display = (deficienciesSpan.style.display === "none") ? "inline" : "none";
                 });
 
-                // Append the indicatorInfo span to the info paragraph
-                infoParagraph.appendChild(indicatorInfoSpan);
+                // Append the spans to the info paragraph
+                infoParagraph.appendChild(relationshipsSpan);
+                infoParagraph.appendChild(deficienciesSpan);
 
                 // Append the info paragraph to the warnings div
                 warningsDiv.appendChild(infoParagraph);
@@ -695,6 +683,9 @@ function drawBoxPlot(data, userInput) {
                 console.warn(`Information not available for blood indicator: ${indicator}`);
             }
         });
+
+
+
 
 
 
