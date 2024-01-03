@@ -14,16 +14,8 @@
     
 
     <style>
-        .flexcontainer {
-            display: flex;
-            flex-flow: row;
-            justify-content: space-between;
-            gap: 200px;
-            
-            margin-top: 50px;
-        }
         
-        #heatmap, #pieChart {
+        #heatmap {
             width: 200px; /* Adjust the width as needed */
         }
         .active {
@@ -83,7 +75,6 @@
 
 <!-- Create a div where the graphs will take place -->
         <div class="col-md-1">
-            <!--<div id="pieChart"></div>-->
             <div class="mt-3" id="warnings" style="width: 300px;"></div>
 
         </div>
@@ -488,16 +479,15 @@ function drawBoxPlot(data, userInput) {
             // Convert data to suitable format
             const dataArray = [];
             const dict = data; // Assuming there's only one dictionary in the list
-            drawPieChart(dict)
+            red_indictors = FindRedIndicators(dict)
+            console.log(red_indictors)
 
             // Iterate over the dictionary entries
             for (const [key, [value, color]] of Object.entries(dict)) {
                 dataArray.push({ key, value, color });
             }
 
-            // Now dataArray contains the desired structure without the reference
-            console.log(dataArray);
-
+        
             // Define margin and cell size
             const margin = { top: 10, right: 0, bottom: 20, left: 240 };
             const cellSize = 30;
@@ -581,7 +571,7 @@ function drawBoxPlot(data, userInput) {
     function displayRedBloodIndicatorInfo(redIndicators) {
         // Define information for each blood indicator
         const bloodIndicatorInfo = {
-            "Alanine aminotransferase (ALT)": {
+            "Alanine aminotransferase ALT": {
                 info: "High levels can be an indication of liver damage.",
             },
             "Albumin": {
@@ -593,26 +583,41 @@ function drawBoxPlot(data, userInput) {
             "Alkaline phosphatase": {
                 info: "Results outside of the normal levels can signal liver damage and bone problems such as rickets or bone tumors.",
             },
-            "Aspartate aminotransferase": {
+            "Aspartate aminotransferase AST": {
                 info: "Results above the healthy range indicating a variety of conditions, including some types of cancer, as well as liver, heart, or kidney damage.",
             },
-            "Bilirubin": {
+            "Total bilirubin": {
                 info: "Warning for kidney and liver dysfunction.Possible outcomes: neonatal jaundice, anemia, and liver diseases.",
             },
             "Blood urea nitrogen": {
                 info: "High levels can be caused by kidney damage or disease, while low levels may be a sign of malnutrition or severe liver damage.",
             },
-            "Calcium": {
+            "Bicarbonate": {
+                info: "Aberrations in bicarbonate levels, whether low due to conditions like kidney disease or diabetic ketoacidosis or high from factors like vomiting or kidney disorders, pose risks such as disruptions in bodily functions, impaired nerve-muscle coordination, and potential electrolyte imbalances.",
+            },
+            "Total calcium": {
                 info: "Calcium low levels can indicate under-active parathyroid glands, insufficient calcium in your diet, or Vit D insufficiency, and other less common conditions. High levels can indicate conditions including over-active parathyroid glands, excessive Vit D supplementation, kidney problems as well as more concerning causes that usually require further investigation. Proper interpretation of calcium levels often requires testing of other parameters such as total serum protein and albumin.",
             },
             "Chloride": {
                 info: "An increased level of chloride can indicate dehydration as well as kidney disorders and adrenal gland dysfunction.",
             },
+            "Cholesterol": {
+                info: "Abnormal cholesterol levels, whether elevated due to factors like poor diet or genetics or lowered as a result of certain medical conditions, can pose risks such as cardiovascular issues, impaired artery function, and increased susceptibility to heart-related complications.",
+            },
             "Creatinine": {
                 info: "Increased levels of creatinine can be a sign of kidney dysfunction.",
             },
+            "Creatine Phosphokinase (CPK)": {
+                info: "Deviations in Creatine Phosphokinase (CPK) levels, whether heightened due to muscle injury or heart issues or diminished as a result of certain medications or genetic factors, can pose risks such as muscle damage, cardiac complications, and potential adverse effects related to the underlying causes.",
+            },
             "Glucose, serum": {
                 info: "Abnormal levels results can indicate diabetes, among other medical conditions.",
+            },
+            "Gamma glutamyl transferase": {
+                info: "Fluctuations in Gamma Glutamyl Transferase (GGT) levels, whether elevated due to liver conditions or excessive alcohol consumption, or reduced as a result of certain medications or dietary factors, can pose risks such as liver dysfunction, potential complications related to alcohol abuse, and impacts on overall metabolic health.",
+            },
+            "Globulin": {
+                info: "Abnormalities in Globulin levels, whether increased due to inflammatory conditions or decreased as a result of malnutrition or certain immune disorders, can pose risks such as compromised immune function, potential organ damage, and susceptibility to infections or autoimmune complications.",
             },
             "Phosphorus": {
                 info: "Elevated levels can indicate problems with the kidneys and parathyroid glands, and they may be a sign of malnutrition or alcohol abuse.",
@@ -623,6 +628,21 @@ function drawBoxPlot(data, userInput) {
             "Sodium": {
                 info: "Irregularities are a possible indication of dehydration, adrenal gland disorders, corticosteroids, and kidney or liver disorders.",
             },
+            "Iron, refrigerated": {
+                info: "Iron, when refrigerated, remains stable and does not undergo significant changes in its properties or efficacy, ensuring its suitability for various applications without risks associated with alterations in composition or effectiveness.",
+            },
+            "Lactate Dehydrogenase": {
+                info: "Changes in Lactate Dehydrogenase (LDH) levels, whether elevated due to tissue damage or reduced as a result of certain medical treatments, can pose risks such as cellular dysfunction, potential organ damage, and implications related to the underlying health conditions.",
+            },
+            "Osmolality": {
+                info: "Fluctuations in osmolality levels, whether increased due to dehydration or decreased as a result of overhydration, can pose risks such as impaired cellular function, potential electrolyte imbalances, and complications related to the body's fluid balance.",
+            },
+            "Triglycerides": {
+                info: "Abnormalities in Triglyceride levels, whether elevated due to factors like poor diet or genetic predisposition, or lowered as a result of lifestyle modifications or medication, can pose risks such as cardiovascular issues, compromised lipid metabolism, and increased susceptibility to heart-related complications.",
+            },
+            "Uric acid": {
+                info: "Deviation in Uric Acid levels, whether elevated due to conditions like gout or kidney dysfunction, or reduced as a result of certain medications or dietary changes, can pose risks such as joint inflammation, potential kidney damage, and complications associated with the underlying health conditions.",
+            },
             
         };
 
@@ -630,7 +650,7 @@ function drawBoxPlot(data, userInput) {
         const warningsDiv = document.getElementById("warnings");
         // Clear existing warnings
         warningsDiv.innerHTML = '';
-        
+
         // Iterate over the red indicators and display the information
         redIndicators.forEach(indicator => {
             // Check if the indicator exists in bloodIndicatorInfo
@@ -638,21 +658,49 @@ function drawBoxPlot(data, userInput) {
             if (bloodIndicatorInfo[indicator]) {
                 const indicatorInfo = bloodIndicatorInfo[indicator];
 
-                // Create a new paragraph element to display the information
-                const paragraph = document.createElement("p");
-                // Set the color of the text to red
-                paragraph.style.color = "red";
-                paragraph.textContent = `${indicator}: ${indicatorInfo.info}`;
-                
-                // Append the paragraph to the warnings div
-                warningsDiv.appendChild(paragraph);
+                // Create a new paragraph element for the indicator
+                const indicatorParagraph = document.createElement("p");
+
+                // Create a button for the indicator and set its color to red
+                const indicatorButton = document.createElement("button");
+                indicatorButton.style.color = "red";
+                indicatorButton.textContent = `\u25BC ${indicator}`; // Unicode arrow down character
+
+                // Append the button to the indicator paragraph
+                indicatorParagraph.appendChild(indicatorButton);
+
+                // Append the indicator paragraph to the warnings div
+                warningsDiv.appendChild(indicatorParagraph);
+
+                // Create a new paragraph element for the indicatorInfo
+                const infoParagraph = document.createElement("p");
+
+                // Create a span for the indicatorInfo
+                const indicatorInfoSpan = document.createElement("span");
+                indicatorInfoSpan.textContent = ` ${indicatorInfo.info}`;
+                indicatorInfoSpan.style.display = "none"; // Initially hide the info
+
+                // Add event listener to toggle visibility on click
+                indicatorButton.addEventListener("click", function () {
+                    indicatorInfoSpan.style.display = (indicatorInfoSpan.style.display === "none") ? "inline" : "none";
+                });
+
+                // Append the indicatorInfo span to the info paragraph
+                infoParagraph.appendChild(indicatorInfoSpan);
+
+                // Append the info paragraph to the warnings div
+                warningsDiv.appendChild(infoParagraph);
+
             } else {
                 console.warn(`Information not available for blood indicator: ${indicator}`);
             }
         });
+
+
+
 }
         
-    function calculateColorPercentages(blood_test) {
+    function FindRedIndicators(blood_test) {
 
         let redIndicators = [];
 
@@ -668,105 +716,9 @@ function drawBoxPlot(data, userInput) {
     
         // Call function to display blood indicator info
         displayRedBloodIndicatorInfo(redIndicators);
+        return redIndicators;
 
-        let green = 0.0;
-        let yellow = 0.0;
-        let red = 0.0;
-
-        // Iterate over the properties of the blood_test object
-        for (const key of Object.keys(blood_test)) {
-            const color = blood_test[key][1];
-
-            if (color === "green") {
-                green += 1;
-            }
-            if (color === "yellow") {
-                yellow += 1;
-            }
-            if (color === "red") {
-                red += 1;
-            }
-        }
-
-        const totalIndicators = 22;
-        const percentages = [green / totalIndicators, yellow / totalIndicators, red / totalIndicators];
-
-        return percentages;
 }
-
-
-
-
-    function drawPieChart(data) {
-        d3.select('#pieChart').selectAll('*').remove();
-        const percentages = calculateColorPercentages(data);
-
-        const width = 200;
-        const height = 200;
-        const radius = Math.min(width, height) / 2;
-
-        const color = d3.scaleOrdinal()
-            .domain(['Green', 'Yellow', 'Red'])
-            .range(['green', '#ffd800', '#c80815']);
-
-        const pie = d3.pie()
-            .value(d => d)
-            .sort(null);
-
-        const arc = d3.arc()
-            .innerRadius(0)
-            .outerRadius(radius);
-
-        const svg = d3.select("#pieChart")
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height)
-            .append("g")
-            .attr("transform", `translate(${width / 2},${height / 2})`);
-
-        const dataValues = Object.values(percentages);
-
-        const chartData = pie(dataValues);
-
-        const path = svg.selectAll("path")
-            .data(chartData)
-            .enter()
-            .append("path")
-            .attr("d", arc)
-            .attr("fill", (d, i) => color(i));
-
-        // Add percentage labels
-        svg.selectAll("text")
-            .data(chartData)
-            .enter()
-            .append("text")
-            .text((d, i) => `${(percentages[i] * 100).toFixed(2)}%`)
-            .attr("transform", d => `translate(${arc.centroid(d)})`)
-            .style("text-anchor", "middle")
-            .style("fill", "black");
-
-        // Add legend
-        const legend = svg.selectAll(".legend")
-            .data(color.domain())
-            .enter()
-            .append("g")
-            .attr("class", "legend")
-            .attr("transform", (d, i) => `translate(0,${i * 20})`);
-
-        legend.append("rect")
-            .attr("x", width - 18)
-            .attr("width", 18)
-            .attr("height", 18)
-            .style("fill", color);
-
-        legend.append("text")
-            .attr("x", width - 24)
-            .attr("y", 9)
-            .attr("dy", ".35em")
-            .style("text-anchor", "end")
-            .text(d => d);
-    }
-
 
 </script>
 

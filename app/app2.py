@@ -3,7 +3,7 @@ from datetime import datetime
 import requests
 from cs50 import SQL
 from healthy_levels import healthy_levels_young_adults, older_adults_reference_ranges, older_elderly_reference_ranges
-from blood_functions import color_mapping, transform_to_fhir_blood_test, color_percentages
+from blood_functions import color_mapping, transform_to_fhir_blood_test
 from summary_stats import summary_stats
 
 app2 = Flask(__name__)
