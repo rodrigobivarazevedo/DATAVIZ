@@ -1,7 +1,7 @@
 
 
 summary_stats = {
-    "Albumin (g/dL)": {
+    "Albumin": {
         "median": 4.3,
         "min_value": 2.1,
         "max_value": 5.5,
@@ -11,7 +11,7 @@ summary_stats = {
         "lower_bound": 3.499999999999999,
         "upper_bound": 5.1000000000000005
     },
-    "Alanine aminotransferase ALT (U/L)": {
+    "Alanine aminotransferase ALT": {
         "median": 19.0,
         "min_value": 5.0,
         "max_value": 443.0,
@@ -21,7 +21,7 @@ summary_stats = {
         "lower_bound": 0,
         "upper_bound": 42.5
     },
-    "Aspartate aminotransferase AST (U/L)": {
+    "Aspartate aminotransferase AST": {
         "median": 22.0,
         "min_value": 7.0,
         "max_value": 302.0,
@@ -31,7 +31,7 @@ summary_stats = {
         "lower_bound": 7.0,
         "upper_bound": 39.0
     },
-    "Alkaline phosphatase (U/L)": {
+    "Alkaline phosphatase": {
         "median": 67.0,
         "min_value": 7.0,
         "max_value": 729.0,
@@ -41,7 +41,7 @@ summary_stats = {
         "lower_bound": 7.5,
         "upper_bound": 131.5
     },
-    "Blood urea nitrogen (mg/dL)": {
+    "Blood urea nitrogen": {
         "median": 12.0,
         "min_value": 2.0,
         "max_value": 95.0,
@@ -51,7 +51,7 @@ summary_stats = {
         "lower_bound": 0.0,
         "upper_bound": 24.0
     },
-    "Total calcium (mg/dL)": {
+    "Total calcium": {
         "median": 9.4,
         "min_value": 6.5,
         "max_value": 11.3,
@@ -61,7 +61,7 @@ summary_stats = {
         "lower_bound": 8.599999999999998,
         "upper_bound": 10.2
     },
-    "Creatine Phosphokinase (CPK) (IU/L)": {
+    "Creatine Phosphokinase (CPK)": {
         "median": 114.0,
         "min_value": 15.0,
         "max_value": 3892.0,
@@ -71,7 +71,7 @@ summary_stats = {
         "lower_bound": 0,
         "upper_bound": 339.5
     },
-    "Cholesterol (mg/dL)": {
+    "Cholesterol": {
         "median": 181.0,
         "min_value": 6.0,
         "max_value": 472.0,
@@ -81,7 +81,7 @@ summary_stats = {
         "lower_bound": 75.0,
         "upper_bound": 291.0
     },
-    "Bicarbonate (mmol/L)": {
+    "Bicarbonate": {
         "median": 25.0,
         "min_value": 16.0,
         "max_value": 37.0,
@@ -91,7 +91,7 @@ summary_stats = {
         "lower_bound": 21.0,
         "upper_bound": 29.0
     },
-    "Creatinine (mg/dL)": {
+    "Creatinine": {
         "median": 0.82,
         "min_value": 0.16,
         "max_value": 9.51,
@@ -101,7 +101,7 @@ summary_stats = {
         "lower_bound": 0.2549999999999999,
         "upper_bound": 1.415
     },
-    "Gamma glutamyl transferase (U/L)": {
+    "Gamma glutamyl transferase": {
         "median": 17.0,
         "min_value": 4.0,
         "max_value": 1136.0,
@@ -111,7 +111,7 @@ summary_stats = {
         "lower_bound": 0,
         "upper_bound": 48.0
     },
-    "Glucose, serum (mg/dL)": {
+    "Glucose, serum": {
         "median": 91.0,
         "min_value": 31.0,
         "max_value": 617.0,
@@ -121,7 +121,7 @@ summary_stats = {
         "lower_bound": 57.0,
         "upper_bound": 129.0
     },
-    "Iron, refrigerated (ug/dL)": {
+    "Iron, refrigerated": {
         "median": 80.0,
         "min_value": 5.0,
         "max_value": 428.0,
@@ -131,7 +131,7 @@ summary_stats = {
         "lower_bound": 0,
         "upper_bound": 171.5
     },
-    "Lactate Dehydrogenase (U/L)": {
+    "Lactate Dehydrogenase": {
         "median": 126.0,
         "min_value": 32.0,
         "max_value": 356.0,
@@ -141,7 +141,7 @@ summary_stats = {
         "lower_bound": 60.5,
         "upper_bound": 192.5
     },
-    "Phosphorus (mg/dL)": {
+    "Phosphorus": {
         "median": 3.8,
         "min_value": 1.6,
         "max_value": 7.2,
@@ -151,7 +151,7 @@ summary_stats = {
         "lower_bound": 2.1999999999999993,
         "upper_bound": 5.4
     },
-    "Total bilirubin (mg/dL)": {
+    "Total bilirubin": {
         "median": 0.7,
         "min_value": 0.1,
         "max_value": 4.4,
@@ -161,7 +161,7 @@ summary_stats = {
         "lower_bound": 0.04999999999999993,
         "upper_bound": 1.25
     },
-    "Total protein (g/dL)": {
+    "Total protein": {
         "median": 7.2,
         "min_value": 5.2,
         "max_value": 9.5,
@@ -171,7 +171,7 @@ summary_stats = {
         "lower_bound": 6.000000000000001,
         "upper_bound": 8.399999999999999
     },
-    "Uric acid (mg/dL)": {
+    "Uric acid": {
         "median": 5.2,
         "min_value": 0.4,
         "max_value": 11.3,
@@ -181,7 +181,7 @@ summary_stats = {
         "lower_bound": 1.4499999999999993,
         "upper_bound": 9.05
     },
-    "Sodium (mmol/L)": {
+    "Sodium": {
         "median": 139.0,
         "min_value": 102.0,
         "max_value": 153.0,
@@ -191,7 +191,7 @@ summary_stats = {
         "lower_bound": 135.0,
         "upper_bound": 143.0
     },
-    "Potassium (mmol/L)": {
+    "Potassium": {
         "median": 3.9,
         "min_value": 2.3,
         "max_value": 5.6,
@@ -201,7 +201,7 @@ summary_stats = {
         "lower_bound": 3.100000000000001,
         "upper_bound": 4.699999999999999
     },
-    "Chloride (mmol/L)": {
+    "Chloride": {
         "median": 104.0,
         "min_value": 70.0,
         "max_value": 115.0,
@@ -211,7 +211,7 @@ summary_stats = {
         "lower_bound": 96.0,
         "upper_bound": 112.0
     },
-    "Osmolality (mmol/Kg)": {
+    "Osmolality": {
         "median": 277.0,
         "min_value": 207.0,
         "max_value": 315.0,
@@ -221,7 +221,7 @@ summary_stats = {
         "lower_bound": 267.5,
         "upper_bound": 287.5
     },
-    "Globulin (g/dL)": {
+    "Globulin": {
         "median": 2.8,
         "min_value": 0.7,
         "max_value": 5.9,
@@ -231,7 +231,7 @@ summary_stats = {
         "lower_bound": 1.85,
         "upper_bound": 3.85
     },
-    "Triglycerides (mg/dL)": {
+    "Triglycerides": {
         "median": 107.0,
         "min_value": 12.0,
         "max_value": 2233.0,

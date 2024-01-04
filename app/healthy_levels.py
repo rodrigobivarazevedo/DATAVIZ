@@ -27,7 +27,7 @@ healthy_levels_young_adults = {
     "Triglycerides (mg/dL)": {"min": 30, "max": 150},
 }
 
-       
+ #(age 40 - 65 years)      
 older_adults_reference_ranges = {
     "Albumin (g/dL)": {"min": 3.4, "max": 5.4},
     "Alanine aminotransferase ALT (U/L)": {"min": 7, "max": 56},
@@ -55,6 +55,7 @@ older_adults_reference_ranges = {
     "Triglycerides (mg/dL)": {"min": 35, "max": 160},
 }
 
+#(age 65+ years)
 older_elderly_reference_ranges = {
     "Albumin (g/dL)": {"min": 3.4, "max": 5.4},
     "Alanine aminotransferase ALT (U/L)": {"min": 7, "max": 56},

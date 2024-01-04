@@ -6,7 +6,6 @@ from healthy_levels import healthy_levels_young_adults, older_adults_reference_r
 from blood_functions import color_mapping, transform_to_fhir_blood_test
 from summary_stats import summary_stats
 from fhir.resources.bundle import Bundle
-from fhir.resources.patient import Patient
 
 app2 = Flask(__name__)
 db = SQL("sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db")
@@ -369,13 +368,10 @@ def blood_tests_raw(patientID):
 @app2.route('/statistics/<string:blood_indicator>', methods=['GET'])
 def statistics(blood_indicator):
     
-    blood_indicator = blood_indicator.capitalize()
-    print(blood_indicator)
     # Check if the blood indicator is in the summary_stats dictionary
     if blood_indicator in summary_stats:
         # Retrieve the statistics for the given blood indicator
         blood_stats = summary_stats[blood_indicator]
-        print(blood_stats)
         # Return the statistics as JSON
         return jsonify(blood_stats)
     else:
