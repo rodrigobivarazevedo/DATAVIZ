@@ -5,10 +5,107 @@ from cs50 import SQL
 from healthy_levels import healthy_levels_young_adults, older_adults_reference_ranges, older_elderly_reference_ranges
 from blood_functions import color_mapping, transform_to_fhir_blood_test
 from summary_stats import summary_stats
+from fhir.resources.bundle import Bundle
+from fhir.resources.patient import Patient
 
 app2 = Flask(__name__)
 db = SQL("sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db")
+
+
+# Route to handle incoming FHIR bundle
+@app2.route('/api/receive_bundle', methods=['POST'])
+def receive_bundle():
+    try:
+        data = request.get_json()
+        bundle = Bundle.parse_obj(data)
+        # Extract patient information
+        patient_data = bundle.Patient
+        name = bundle.name
+        first_name = name.given
+        last_name = name.family
+        birth_date = patient_data['birthDate']
+        gender = patient_data['gender']
+
+        # Insert patient information into the 'patients' table
+        db.execute("INSERT INTO patients (FIRST_NAME, LAST_NAME, BIRTH_DATE, GENDER) VALUES (?, ?, ?, ?)",
+                   first_name, last_name, birth_date, gender)
+        patient_id = db.execute("SELECT last_insert_rowid()")[0]['last_insert_rowid()']
+
+        # Extract blood test results information
+        blood_results_data = data['blood_results']
+
+        # Insert blood test results into the 'blood_indicators' table
+        db.execute("""
+                    INSERT INTO blood_indicators (
+                    ID, 
+                    DATE, 
+                    Albumin_g_dL, 
+                    Albumin_g_L, 
+                    Alanine_aminotransferase_ALT_U_L, 
+                    Aspartate_aminotransferase_AST_U_L, 
+                    Alkaline_phosphatase_U_L, 
+                    Blood_urea_nitrogen_mg_dL, 
+                    Blood_urea_nitrogen_mmol_L, 
+                    Total_calcium_mg_dL, 
+                    Total_calcium_mmol_L, 
+                    Creatine_Phosphokinase_CPK_IU_L, 
+                    Cholesterol_mg_dL, 
+                    Cholesterol_mmol_L, 
+                    Bicarbonate_mmol_L, 
+                    Creatinine_mg_dL, 
+                    Creatinine_umol_L, 
+                    Gamma_glutamyl_transferase_U_L, 
+                    Glucose_serum_mg_dL, 
+                    Glucose_serum_mmol_L, 
+                    Iron_refrigerated_ug_dL, 
+                    Iron_refrigerated_umol_L, 
+                    Lactate_dehydrogenase_U_L, 
+                    Phosphorus_mg_dL, 
+                    Phosphorus_mmol_L, 
+                    Total_bilirubin_mg_dL, 
+                    Total_bilirubin_umol_L, 
+                    Total_protein_g_dL, 
+                    Total_protein_g_L, 
+                    Uric_acid_mg_dL, 
+                    Uric_acid_umol_L, 
+                    Sodium_mmol_L, 
+                    Potassium_mmol_L, 
+                    Chloride_mmol_L, 
+                    Osmolality_mmol_Kg, 
+                    Globulin_g_dL, 
+                    Globulin_g_L, 
+                    Triglycerides_mg_dL, 
+                    Triglycerides_mmol_L
+                    ) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    patient_id, blood_results_data['date'],
+                    blood_results_data['Albumin_g_dL'], blood_results_data['Albumin_g_L'],
+                    blood_results_data['Alanine_aminotransferase_ALT_U_L'],
+                    blood_results_data['Aspartate_aminotransferase_AST_U_L'],
+                    blood_results_data['Alkaline_phosphatase_U_L'],
+                    blood_results_data['Blood_urea_nitrogen_mg_dL'], blood_results_data['Blood_urea_nitrogen_mmol_L'],
+                    blood_results_data['Total_calcium_mg_dL'], blood_results_data['Total_calcium_mmol_L'],
+                    blood_results_data['Creatine_Phosphokinase_CPK_IU_L'], blood_results_data['Cholesterol_mg_dL'],
+                    blood_results_data['Cholesterol_mmol_L'], blood_results_data['Bicarbonate_mmol_L'],
+                    blood_results_data['Creatinine_mg_dL'], blood_results_data['Creatinine_umol_L'],
+                    blood_results_data['Gamma_glutamyl_transferase_U_L'], blood_results_data['Glucose_serum_mg_dL'],
+                    blood_results_data['Glucose_serum_mmol_L'], blood_results_data['Iron_refrigerated_ug_dL'],
+                    blood_results_data['Iron_refrigerated_umol_L'], blood_results_data['Lactate_dehydrogenase_U_L'],
+                    blood_results_data['Phosphorus_mg_dL'], blood_results_data['Phosphorus_mmol_L'],
+                    blood_results_data['Total_bilirubin_mg_dL'], blood_results_data['Total_bilirubin_umol_L'],
+                    blood_results_data['Total_protein_g_dL'], blood_results_data['Total_protein_g_L'],
+                    blood_results_data['Uric_acid_mg_dL'], blood_results_data['Uric_acid_umol_L'],
+                    blood_results_data['Sodium_mmol_L'], blood_results_data['Potassium_mmol_L'],
+                    blood_results_data['Chloride_mmol_L'], blood_results_data['Osmolality_mmol_Kg'],
+                    blood_results_data['Globulin_g_dL'], blood_results_data['Globulin_g_L'],
+                    blood_results_data['Triglycerides_mg_dL'], blood_results_data['Triglycerides_mmol_L'])
+
+        return jsonify({"message": "Data stored successfully", "patient_id": patient_id}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     
+
 
 @app2.route("/")
 def patient_data():
@@ -106,32 +203,33 @@ def get_blood_tests_raw(patientID):
     for blood_test in blood_tests:
         formated_blood_tests.append({
  
-            'Albumin (g/L)': blood_test['Albumin_g_L'],
+            'Albumin (g/dL)': blood_test['Albumin_g_dL'],
             'Alanine aminotransferase ALT (U/L)': blood_test['Alanine_aminotransferase_ALT_U_L'],
             'Aspartate aminotransferase AST (U/L)': blood_test['Aspartate_aminotransferase_AST_U_L'],
             'Alkaline phosphatase (U/L)': blood_test['Alkaline_phosphatase_U_L'],
-            'Blood urea nitrogen (mmol/L)': blood_test['Blood_urea_nitrogen_mmol_L'],
-            'Total calcium (mmol/L)': blood_test['Total_calcium_mmol_L'],
+            'Blood urea nitrogen (mg/dL)': blood_test['Blood_urea_nitrogen_mg_dL'],
+            'Total calcium (mg/dL)': blood_test['Total_calcium_mg_dL'],
             'Creatine Phosphokinase (CPK) (IU/L)': blood_test['Creatine_Phosphokinase_CPK_IU_L'],
-            'Cholesterol (mmol/L)': blood_test['Cholesterol_mmol_L'],
+            'Cholesterol (mg/dL)': blood_test['Cholesterol_mg_dL'],
             'Bicarbonate (mmol/L)': blood_test['Bicarbonate_mmol_L'],
-            'Creatinine (umol/L)': blood_test['Creatinine_umol_L'],
+            'Creatinine (mg/dL)': blood_test['Creatinine_mg_dL'],
             'Gamma glutamyl transferase (U/L)': blood_test['Gamma_glutamyl_transferase_U_L'],
-            'Glucose, serum (mmol/L)': blood_test['Glucose_serum_mmol_L'],
-            'Iron, refrigerated (umol/L)': blood_test['Iron_refrigerated_umol_L'],
+            'Glucose, serum (mg/dL)': blood_test['Glucose_serum_mg_dL'],
+            'Iron, refrigerated (ug/dL)': blood_test['Iron_refrigerated_ug_dL'],
             'Lactate Dehydrogenase (U/L)': blood_test['Lactate_dehydrogenase_U_L'],
-            'Phosphorus (mmol/L)': blood_test['Phosphorus_mmol_L'],
-            'Total bilirubin (umol/L)': blood_test['Total_bilirubin_umol_L'],
-            'Total protein (g/L)': blood_test['Total_protein_g_L'],
-            'Uric acid (umol/L)': blood_test['Uric_acid_umol_L'],
+            'Phosphorus (mg/dL)': blood_test['Phosphorus_mg_dL'],
+            'Total bilirubin (mg/dL)': blood_test['Total_bilirubin_mg_dL'],
+            'Total protein (g/dL)': blood_test['Total_protein_g_dL'],
+            'Uric acid (mg/dL)': blood_test['Uric_acid_mg_dL'],
             'Sodium (mmol/L)': blood_test['Sodium_mmol_L'],
             'Potassium (mmol/L)': blood_test['Potassium_mmol_L'],
             'Chloride (mmol/L)': blood_test['Chloride_mmol_L'],
             'Osmolality (mmol/Kg)': blood_test['Osmolality_mmol_Kg'],
-            'Globulin (g/L)': blood_test['Globulin_g_L'],
-            'Triglycerides (mmol/L)': blood_test['Triglycerides_mmol_L']
+            'Globulin (g/dL)': blood_test['Globulin_g_dL'],
+            'Triglycerides (mg/dL)': blood_test['Triglycerides_mg_dL']
         })
-    
+            
+         
 
     reference_ranges = get_blood_tests_references(patientID)
             
@@ -178,30 +276,30 @@ def blood_tests_raw(patientID):
         formated_blood_tests = []
         for blood_test in blood_tests:
             formated_blood_tests.append({
-            'Albumin (g/L)': blood_test['Albumin_g_L'],
+            'Albumin (g/dL)': blood_test['Albumin_g_dL'],
             'Alanine aminotransferase ALT (U/L)': blood_test['Alanine_aminotransferase_ALT_U_L'],
             'Aspartate aminotransferase AST (U/L)': blood_test['Aspartate_aminotransferase_AST_U_L'],
             'Alkaline phosphatase (U/L)': blood_test['Alkaline_phosphatase_U_L'],
-            'Blood urea nitrogen (mmol/L)': blood_test['Blood_urea_nitrogen_mmol_L'],
-            'Total calcium (mmol/L)': blood_test['Total_calcium_mmol_L'],
+            'Blood urea nitrogen (mg/dL)': blood_test['Blood_urea_nitrogen_mg_dL'],
+            'Total calcium (mg/dL)': blood_test['Total_calcium_mg_dL'],
             'Creatine Phosphokinase (CPK) (IU/L)': blood_test['Creatine_Phosphokinase_CPK_IU_L'],
-            'Cholesterol (mmol/L)': blood_test['Cholesterol_mmol_L'],
+            'Cholesterol (mg/dL)': blood_test['Cholesterol_mg_dL'],
             'Bicarbonate (mmol/L)': blood_test['Bicarbonate_mmol_L'],
-            'Creatinine (umol/L)': blood_test['Creatinine_umol_L'],
+            'Creatinine (mg/dL)': blood_test['Creatinine_mg_dL'],
             'Gamma glutamyl transferase (U/L)': blood_test['Gamma_glutamyl_transferase_U_L'],
-            'Glucose, serum (mmol/L)': blood_test['Glucose_serum_mmol_L'],
-            'Iron, refrigerated (umol/L)': blood_test['Iron_refrigerated_umol_L'],
+            'Glucose, serum (mg/dL)': blood_test['Glucose_serum_mg_dL'],
+            'Iron, refrigerated (ug/dL)': blood_test['Iron_refrigerated_ug_dL'],
             'Lactate Dehydrogenase (U/L)': blood_test['Lactate_dehydrogenase_U_L'],
-            'Phosphorus (mmol/L)': blood_test['Phosphorus_mmol_L'],
-            'Total bilirubin (umol/L)': blood_test['Total_bilirubin_umol_L'],
-            'Total protein (g/L)': blood_test['Total_protein_g_L'],
-            'Uric acid (umol/L)': blood_test['Uric_acid_umol_L'],
+            'Phosphorus (mg/dL)': blood_test['Phosphorus_mg_dL'],
+            'Total bilirubin (mg/dL)': blood_test['Total_bilirubin_mg_dL'],
+            'Total protein (g/dL)': blood_test['Total_protein_g_dL'],
+            'Uric acid (mg/dL)': blood_test['Uric_acid_mg_dL'],
             'Sodium (mmol/L)': blood_test['Sodium_mmol_L'],
             'Potassium (mmol/L)': blood_test['Potassium_mmol_L'],
             'Chloride (mmol/L)': blood_test['Chloride_mmol_L'],
             'Osmolality (mmol/Kg)': blood_test['Osmolality_mmol_Kg'],
-            'Globulin (g/L)': blood_test['Globulin_g_L'],
-            'Triglycerides (mmol/L)': blood_test['Triglycerides_mmol_L']
+            'Globulin (g/dL)': blood_test['Globulin_g_dL'],
+            'Triglycerides (mg/dL)': blood_test['Triglycerides_mg_dL']
         })
 
         reference_ranges = get_blood_tests_references(patientID)
@@ -229,30 +327,30 @@ def blood_tests_raw(patientID):
         for blood_test in blood_tests_all:
             formatted_blood_tests_all.append({
             'DATE' : blood_test['DATE'],
-            'Albumin (g/L)': blood_test['Albumin_g_L'],
+            'Albumin (g/dL)': blood_test['Albumin_g_dL'],
             'Alanine aminotransferase ALT (U/L)': blood_test['Alanine_aminotransferase_ALT_U_L'],
             'Aspartate aminotransferase AST (U/L)': blood_test['Aspartate_aminotransferase_AST_U_L'],
             'Alkaline phosphatase (U/L)': blood_test['Alkaline_phosphatase_U_L'],
-            'Blood urea nitrogen (mmol/L)': blood_test['Blood_urea_nitrogen_mmol_L'],
-            'Total calcium (mmol/L)': blood_test['Total_calcium_mmol_L'],
+            'Blood urea nitrogen (mg/dL)': blood_test['Blood_urea_nitrogen_mg_dL'],
+            'Total calcium (mg/dL)': blood_test['Total_calcium_mg_dL'],
             'Creatine Phosphokinase (CPK) (IU/L)': blood_test['Creatine_Phosphokinase_CPK_IU_L'],
-            'Cholesterol (mmol/L)': blood_test['Cholesterol_mmol_L'],
+            'Cholesterol (mg/dL)': blood_test['Cholesterol_mg_dL'],
             'Bicarbonate (mmol/L)': blood_test['Bicarbonate_mmol_L'],
-            'Creatinine (umol/L)': blood_test['Creatinine_umol_L'],
+            'Creatinine (mg/dL)': blood_test['Creatinine_mg_dL'],
             'Gamma glutamyl transferase (U/L)': blood_test['Gamma_glutamyl_transferase_U_L'],
-            'Glucose, serum (mmol/L)': blood_test['Glucose_serum_mmol_L'],
-            'Iron, refrigerated (umol/L)': blood_test['Iron_refrigerated_umol_L'],
+            'Glucose, serum (mg/dL)': blood_test['Glucose_serum_mg_dL'],
+            'Iron, refrigerated (ug/dL)': blood_test['Iron_refrigerated_ug_dL'],
             'Lactate Dehydrogenase (U/L)': blood_test['Lactate_dehydrogenase_U_L'],
-            'Phosphorus (mmol/L)': blood_test['Phosphorus_mmol_L'],
-            'Total bilirubin (umol/L)': blood_test['Total_bilirubin_umol_L'],
-            'Total protein (g/L)': blood_test['Total_protein_g_L'],
-            'Uric acid (umol/L)': blood_test['Uric_acid_umol_L'],
+            'Phosphorus (mg/dL)': blood_test['Phosphorus_mg_dL'],
+            'Total bilirubin (mg/dL)': blood_test['Total_bilirubin_mg_dL'],
+            'Total protein (g/dL)': blood_test['Total_protein_g_dL'],
+            'Uric acid (mg/dL)': blood_test['Uric_acid_mg_dL'],
             'Sodium (mmol/L)': blood_test['Sodium_mmol_L'],
             'Potassium (mmol/L)': blood_test['Potassium_mmol_L'],
             'Chloride (mmol/L)': blood_test['Chloride_mmol_L'],
             'Osmolality (mmol/Kg)': blood_test['Osmolality_mmol_Kg'],
-            'Globulin (g/L)': blood_test['Globulin_g_L'],
-            'Triglycerides (mmol/L)': blood_test['Triglycerides_mmol_L']
+            'Globulin (g/dL)': blood_test['Globulin_g_dL'],
+            'Triglycerides (mg/dL)': blood_test['Triglycerides_mg_dL']
         })
             
 
@@ -272,10 +370,12 @@ def blood_tests_raw(patientID):
 def statistics(blood_indicator):
     
     blood_indicator = blood_indicator.capitalize()
+    print(blood_indicator)
     # Check if the blood indicator is in the summary_stats dictionary
     if blood_indicator in summary_stats:
         # Retrieve the statistics for the given blood indicator
         blood_stats = summary_stats[blood_indicator]
+        print(blood_stats)
         # Return the statistics as JSON
         return jsonify(blood_stats)
     else:
