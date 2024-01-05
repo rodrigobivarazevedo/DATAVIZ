@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FHIR Bundle Sender</title>
+</head>
+<body>
+
+  <h2>FHIR Bundle Sender</h2>
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Textarea column -->
+        <div class="col-md-6">
+            <textarea id="fhirBundleInput" rows="50" cols="70" class="form-control" placeholder="Enter FHIR Bundle JSON..."></textarea>
+            <br>
+            <button class="btn btn-primary" onclick="sendToFHIRServer()">Send to FHIR Server</button>
+        </div>
+
+        <!-- Table column -->
+        <div class="col-md-6">
+            <!-- Table to display blood results -->
+            <div id="tableContainer">
+                <h2>Blood Results</h2>
+                <table id="bloodResultsTable" class="table">
+                    <!-- Table headers will be added dynamically -->
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+  <script>
+    function sendToFHIRServer() {
+        // Get FHIR Bundle JSON from the textarea
+        const fhirBundleInput = document.getElementById('fhirBundleInput').value;
+    
+        try {
+            // Parse JSON to ensure it is valid
+            const fhirBundle = JSON.parse(fhirBundleInput);
+    
+            // Make a POST request to Flask endpoint
+            fetch('/process_cmp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(fhirBundle),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                if (data) {
+                    // Successful response
+                    alert('FHIR Bundle retrieved successfully!');
+                    // Call the correct function with your blood results data
+                    displayBloodResults(data);
+                } else {
+                    // Error response
+                    alert('Response Error: internal server' );
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error sending FHIR Bundle!');
+            });
+        } catch (error) {
+            console.error('Invalid JSON:', error);
+            alert('Invalid JSON. Please enter a valid FHIR Bundle.');
+        }
+    }
+    
+
+
+    function displayBloodResults(data) {
+        const tableContainer = document.getElementById('tableContainer');
+        const bloodResultsTable = document.getElementById('bloodResultsTable');
+    
+        // Clear previous content
+        bloodResultsTable.innerHTML = '';
+    
+        if (data) {
+            // Successful response
+            const bloodResults = data;
+    
+            // Create table headers
+            const headers = ['Blood Indicator', 'Value', 'Unit'];
+            const headerRow = bloodResultsTable.insertRow();
+            headers.forEach(headerText => {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                headerRow.appendChild(th);
+            });
+    
+            // Populate the table with data
+            Object.entries(bloodResults).forEach(([indicator, values]) => {
+                const row = bloodResultsTable.insertRow();
+                const indicatorCell = row.insertCell(0);
+                const valueCell = row.insertCell(1);
+                const unitCell = row.insertCell(2);
+    
+                indicatorCell.textContent = indicator;
+                
+                // Check if 'values' is an object with 'value' and 'unit' properties
+                if (values && typeof values === 'object' && 'value' in values && 'unit' in values) {
+                    valueCell.textContent = values.value;
+                    unitCell.textContent = values.unit;
+                } else {
+                    // Handle the case where 'values' doesn't have the expected structure
+                    valueCell.textContent = 'N/A';
+                    unitCell.textContent = 'N/A';
+                }
+            });
+    
+            // Show the table
+            tableContainer.style.display = 'block';
+        }
+    }
+    
+    
+
+    
+
+
+
+  </script>
+
+</body>
+</html>

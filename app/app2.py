@@ -6,11 +6,86 @@ from healthy_levels import healthy_levels_young_adults, older_adults_reference_r
 from blood_functions import color_mapping, transform_to_fhir_blood_test
 from summary_stats import summary_stats
 from fhir.resources.bundle import Bundle
+import json
 
 app2 = Flask(__name__)
 db = SQL("sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db")
 
 
+@app2.route("/fhir")
+def fhir():
+    return render_template("fhir.html") 
+
+@app2.route('/process_cmp', methods=['POST'])
+def process_cmp():
+    try:
+        # Ensure the 'Content-Type' header is set to 'application/json'
+        if request.headers['Content-Type'] != 'application/json':
+            return jsonify({"error": "Invalid Content-Type. Please use 'application/json'"}), 400
+        json_bundle = json.dumps(request.json)
+        # Get the FHIR Bundle from the request
+        fhir_bundle = Bundle.parse_raw(json_bundle)
+
+        # Initialize a dictionary to store blood indicators and values
+        blood_results = {}
+
+        # Iterate through entries in the Bundle
+        for entry in fhir_bundle.entry:
+            if entry.resource.resource_type == "Observation":
+                # Extract blood indicator and value from Observation
+                code_display = entry.resource.code.text
+                value_quantity = float(entry.resource.valueQuantity.value)  # Convert Decimal to float
+                unit = entry.resource.valueQuantity.unit
+
+                # Store blood indicator and value in the dictionary
+                blood_results[code_display] = {"value": value_quantity, "unit": unit}
+        
+        return jsonify(blood_results), 200
+
+    except KeyError as ke:
+        return jsonify({"error": f"KeyError: {str(ke)}"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+   
+@app2.route('/fhir_bundle', methods=['POST'])
+def process_fhir_bundle():
+    try:
+        # Get the FHIR Bundle from the request
+        fhir_bundle = Bundle(request.json)
+
+        # Initialize dictionaries to store patient and blood results
+        patient_info = {}
+        blood_results = {}
+
+        # Iterate through entries in the Bundle
+        for entry in fhir_bundle.entry:
+            if entry.resource.resource_type == "Observation":
+                # Extract blood indicator, value, and unit from Observation
+                code_display = entry.resource.code.text
+                value_quantity = entry.resource.valueQuantity.value
+                unit = entry.resource.valueQuantity.unit
+
+                # Store blood indicator, value, and unit in the dictionary
+                blood_results[code_display] = {"value": value_quantity, "unit": unit}
+
+            elif entry.resource.resource_type == "Patient":
+                # Extract patient information
+                patient_name = entry.resource.name[0].text if entry.resource.name else "Unknown"
+                patient_id = entry.resource.id
+
+                # Store patient information in the dictionary
+                patient_info["name"] = patient_name
+                patient_info["id"] = patient_id
+
+        return jsonify({"patient_info": patient_info, "blood_results": blood_results}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    
+    
 # Route to handle incoming FHIR bundle
 @app2.route('/api/receive_bundle', methods=['POST'])
 def receive_bundle():
