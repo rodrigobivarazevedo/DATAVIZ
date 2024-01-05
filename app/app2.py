@@ -6,7 +6,10 @@ from healthy_levels import healthy_levels_young_adults, older_adults_reference_r
 from blood_functions import color_mapping, transform_to_fhir_blood_test
 from summary_stats import summary_stats
 from fhir.resources.bundle import Bundle
+from fhir.resources.diagnosticreport import DiagnosticReport
 import json
+from fhir.resources.observation import Observation
+
 
 app2 = Flask(__name__)
 db = SQL("sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db")
@@ -32,13 +35,13 @@ def process_cmp():
         # Iterate through entries in the Bundle
         for entry in fhir_bundle.entry:
             if entry.resource.resource_type == "Observation":
-                # Extract blood indicator and value from Observation
+                 # Extract blood indicator and value from Observation
                 code_display = entry.resource.code.text
                 value_quantity = float(entry.resource.valueQuantity.value)  # Convert Decimal to float
                 unit = entry.resource.valueQuantity.unit
-
+                effective_date = entry.resource.effectiveDateTime  # Extract effective date
                 # Store blood indicator and value in the dictionary
-                blood_results[code_display] = {"value": value_quantity, "unit": unit}
+                blood_results[code_display] = {"value": value_quantity, "unit": unit, "effective_date": effective_date.strftime('%Y-%m-%d')}
         
         return jsonify(blood_results), 200
 
@@ -53,134 +56,108 @@ def process_cmp():
 def process_fhir_bundle():
     try:
         # Get the FHIR Bundle from the request
-        fhir_bundle = Bundle(request.json)
+        fhir_bundle = Bundle.parse_obj(request.json)
 
         # Initialize dictionaries to store patient and blood results
         patient_info = {}
         blood_results = {}
 
         # Iterate through entries in the Bundle
+         # Iterate through entries in the Bundle
         for entry in fhir_bundle.entry:
             if entry.resource.resource_type == "Observation":
-                # Extract blood indicator, value, and unit from Observation
+                # Extract blood indicator and value from Observation
                 code_display = entry.resource.code.text
-                value_quantity = entry.resource.valueQuantity.value
+                value_quantity = float(entry.resource.valueQuantity.value)  # Convert Decimal to float
                 unit = entry.resource.valueQuantity.unit
+                effective_date = entry.resource.effectiveDateTime  # Extract effective date
+                # Store blood indicator and value in the dictionary
+                blood_results[code_display] = {"value": value_quantity, "unit": unit, "effective_date": effective_date.strftime('%Y-%m-%d')}
 
-                # Store blood indicator, value, and unit in the dictionary
-                blood_results[code_display] = {"value": value_quantity, "unit": unit}
-
+          
             elif entry.resource.resource_type == "Patient":
                 # Extract patient information
-                patient_name = entry.resource.name[0].text if entry.resource.name else "Unknown"
-                patient_id = entry.resource.id
+                patient = entry.resource
+                first_name = patient.name[0].given[0] if patient.name and patient.name[0].given else ""
+                last_name = patient.name[0].family if patient.name and patient.name[0].family else ""
+                gender = patient.gender
+                birth_date = patient.birthDate
 
                 # Store patient information in the dictionary
-                patient_info["name"] = patient_name
-                patient_info["id"] = patient_id
+                patient_info["first_name"] = first_name
+                patient_info["last_name"] = last_name
+                patient_info['birthDate'] = birth_date.strftime('%Y-%m-%d')
+                patient_info['gender'] = gender
+                
+        if patient_info =="" and blood_results =="":
+        
+            # Insert patient information into the 'patients' table
+            db.execute("INSERT INTO patients_new (FIRST_NAME, LAST_NAME, BIRTH_DATE, GENDER) VALUES (?, ?, ?, ?)",
+                    first_name, last_name, birth_date, gender)
+            patient_id = db.execute("SELECT last_insert_rowid()")[0]['last_insert_rowid()']       
+                # Insert blood test results into the 'blood_indicators' table
+            db.execute("""
+                        INSERT INTO blood_indicators (
+                        ID, 
+                        DATE, 
+                        Albumin_g_dL,  
+                        Alanine_aminotransferase_ALT_U_L, 
+                        Aspartate_aminotransferase_AST_U_L, 
+                        Alkaline_phosphatase_U_L, 
+                        Blood_urea_nitrogen_mg_dL,  
+                        Total_calcium_mg_dL, 
+                        Creatine_Phosphokinase_CPK_IU_L, 
+                        Cholesterol_mg_dL, 
+                        Cholesterol_mmol_L, 
+                        Bicarbonate_mmol_L, 
+                        Creatinine_mg_dL, 
+                        Gamma_glutamyl_transferase_U_L, 
+                        Glucose_serum_mg_dL,  
+                        Iron_refrigerated_ug_dL,  
+                        Lactate_dehydrogenase_U_L, 
+                        Phosphorus_mg_dL, 
+                        Total_bilirubin_mg_dL, 
+                        Total_protein_g_dL, 
+                        Uric_acid_mg_dL,  
+                        Sodium_mmol_L, 
+                        Potassium_mmol_L, 
+                        Chloride_mmol_L, 
+                        Osmolality_mmol_Kg, 
+                        Globulin_g_dL, 
+                        Triglycerides_mg_dL, 
+                        ) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        patient_id, blood_results['date'],
+                        blood_results['Albumin'],
+                        blood_results['Alanine aminotransferase ALT'],
+                        blood_results['Aspartate aminotransferase AST'],
+                        blood_results['Alkaline phosphatase'],
+                        blood_results['Blood urea nitrogen'], 
+                        blood_results['Total calcium'], 
+                        blood_results['Creatine Phosphokinase'], blood_results['Cholesterol'],
+                        blood_results['Bicarbonate'],
+                        blood_results['Creatinine'],
+                        blood_results['Gamma glutamyl transferase'], blood_results['Glucose serum'],
+                        blood_results['Iron refrigerated'],
+                        blood_results['Lactate dehydrogenase'],
+                        blood_results['Phosphorus'], 
+                        blood_results['Total bilirubin'], 
+                        blood_results['Total protein'],
+                        blood_results['Uric acid'], 
+                        blood_results['Sodium'], blood_results['Potassium'],
+                        blood_results['Chloride'], blood_results['Osmolality'],
+                        blood_results['Globulin'], 
+                        blood_results['Triglycerides'])
 
-        return jsonify({"patient_info": patient_info, "blood_results": blood_results}), 200
 
+            return jsonify({"message": "Data stored successfully","patient_id": patient_id, "patient_info": patient_info, "blood_results": blood_results}), 200
+        else:
+            return jsonify({"message": "problems receiving data", "blood_results": blood_results, "patient_info":patient_info}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+ 
     
-    
-# Route to handle incoming FHIR bundle
-@app2.route('/api/receive_bundle', methods=['POST'])
-def receive_bundle():
-    try:
-        data = request.get_json()
-        bundle = Bundle.parse_obj(data)
-        # Extract patient information
-        patient_data = bundle.Patient
-        name = bundle.name
-        first_name = name.given
-        last_name = name.family
-        birth_date = patient_data['birthDate']
-        gender = patient_data['gender']
-
-        # Insert patient information into the 'patients' table
-        db.execute("INSERT INTO patients (FIRST_NAME, LAST_NAME, BIRTH_DATE, GENDER) VALUES (?, ?, ?, ?)",
-                   first_name, last_name, birth_date, gender)
-        patient_id = db.execute("SELECT last_insert_rowid()")[0]['last_insert_rowid()']
-
-        # Extract blood test results information
-        blood_results_data = data['blood_results']
-
-        # Insert blood test results into the 'blood_indicators' table
-        db.execute("""
-                    INSERT INTO blood_indicators (
-                    ID, 
-                    DATE, 
-                    Albumin_g_dL, 
-                    Albumin_g_L, 
-                    Alanine_aminotransferase_ALT_U_L, 
-                    Aspartate_aminotransferase_AST_U_L, 
-                    Alkaline_phosphatase_U_L, 
-                    Blood_urea_nitrogen_mg_dL, 
-                    Blood_urea_nitrogen_mmol_L, 
-                    Total_calcium_mg_dL, 
-                    Total_calcium_mmol_L, 
-                    Creatine_Phosphokinase_CPK_IU_L, 
-                    Cholesterol_mg_dL, 
-                    Cholesterol_mmol_L, 
-                    Bicarbonate_mmol_L, 
-                    Creatinine_mg_dL, 
-                    Creatinine_umol_L, 
-                    Gamma_glutamyl_transferase_U_L, 
-                    Glucose_serum_mg_dL, 
-                    Glucose_serum_mmol_L, 
-                    Iron_refrigerated_ug_dL, 
-                    Iron_refrigerated_umol_L, 
-                    Lactate_dehydrogenase_U_L, 
-                    Phosphorus_mg_dL, 
-                    Phosphorus_mmol_L, 
-                    Total_bilirubin_mg_dL, 
-                    Total_bilirubin_umol_L, 
-                    Total_protein_g_dL, 
-                    Total_protein_g_L, 
-                    Uric_acid_mg_dL, 
-                    Uric_acid_umol_L, 
-                    Sodium_mmol_L, 
-                    Potassium_mmol_L, 
-                    Chloride_mmol_L, 
-                    Osmolality_mmol_Kg, 
-                    Globulin_g_dL, 
-                    Globulin_g_L, 
-                    Triglycerides_mg_dL, 
-                    Triglycerides_mmol_L
-                    ) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    patient_id, blood_results_data['date'],
-                    blood_results_data['Albumin_g_dL'], blood_results_data['Albumin_g_L'],
-                    blood_results_data['Alanine_aminotransferase_ALT_U_L'],
-                    blood_results_data['Aspartate_aminotransferase_AST_U_L'],
-                    blood_results_data['Alkaline_phosphatase_U_L'],
-                    blood_results_data['Blood_urea_nitrogen_mg_dL'], blood_results_data['Blood_urea_nitrogen_mmol_L'],
-                    blood_results_data['Total_calcium_mg_dL'], blood_results_data['Total_calcium_mmol_L'],
-                    blood_results_data['Creatine_Phosphokinase_CPK_IU_L'], blood_results_data['Cholesterol_mg_dL'],
-                    blood_results_data['Cholesterol_mmol_L'], blood_results_data['Bicarbonate_mmol_L'],
-                    blood_results_data['Creatinine_mg_dL'], blood_results_data['Creatinine_umol_L'],
-                    blood_results_data['Gamma_glutamyl_transferase_U_L'], blood_results_data['Glucose_serum_mg_dL'],
-                    blood_results_data['Glucose_serum_mmol_L'], blood_results_data['Iron_refrigerated_ug_dL'],
-                    blood_results_data['Iron_refrigerated_umol_L'], blood_results_data['Lactate_dehydrogenase_U_L'],
-                    blood_results_data['Phosphorus_mg_dL'], blood_results_data['Phosphorus_mmol_L'],
-                    blood_results_data['Total_bilirubin_mg_dL'], blood_results_data['Total_bilirubin_umol_L'],
-                    blood_results_data['Total_protein_g_dL'], blood_results_data['Total_protein_g_L'],
-                    blood_results_data['Uric_acid_mg_dL'], blood_results_data['Uric_acid_umol_L'],
-                    blood_results_data['Sodium_mmol_L'], blood_results_data['Potassium_mmol_L'],
-                    blood_results_data['Chloride_mmol_L'], blood_results_data['Osmolality_mmol_Kg'],
-                    blood_results_data['Globulin_g_dL'], blood_results_data['Globulin_g_L'],
-                    blood_results_data['Triglycerides_mg_dL'], blood_results_data['Triglycerides_mmol_L'])
-
-        return jsonify({"message": "Data stored successfully", "patient_id": patient_id}), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-
-
 @app2.route("/")
 def patient_data():
     return render_template("views2.html")  
