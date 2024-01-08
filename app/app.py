@@ -9,10 +9,19 @@ from fhir.resources.bundle import Bundle
 import json
 import traceback
 from apiflask import APIFlask
+import os
 
 app = APIFlask(__name__, title="Blood Visualization app", version="2.0")
-db = SQL("sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db")
+#db = SQL("sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db")
 
+# Get the base directory of the application
+base_dir = os.path.abspath(os.path.dirname(__file__))
+
+# Construct the path to the database file (assuming db is outside the app folder)
+db_path = os.path.join(base_dir, "..", "db", "blood_tests.db")
+
+# Initialize the SQL object with the correct path
+db = SQL(f"sqlite:///{db_path}")
 
 @app.route("/fhir")
 def fhir():
