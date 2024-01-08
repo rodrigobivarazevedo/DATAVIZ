@@ -9,5 +9,4 @@
   "forwardPorts": [5000],
   "postCreateCommand": "/bin/sh -c 'cd /app && python app.py'",
   "workspaceMount": "source=${localWorkspaceFolder}/app,target=/app,type=bind,consistency=delegated",
-  "workspaceFolder": "/app"
 }
