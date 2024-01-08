@@ -8,9 +8,9 @@ from summary_stats import summary_stats
 from fhir.resources.bundle import Bundle
 import json
 import traceback
+from apiflask import APIFlask
 
-
-app2 = Flask(__name__)
+app2 = APIFlask(__name__, title="Blood Visualization app", version="2.0")
 db = SQL("sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db")
 
 
@@ -436,7 +436,6 @@ def blood_tests_raw(patientID):
         for key, values in colored_blood_test_data_all[0].items():
             if key in reference_ranges_all:
                 combined_dict_all[key] = values + [reference_ranges_all[key]]
-        
         return jsonify(colored_blood_test_data_all)
 
 @app2.route('/statistics/<string:blood_indicator>', methods=['GET'])
