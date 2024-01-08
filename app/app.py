@@ -12,7 +12,7 @@ from apiflask import APIFlask
 import os
 
 app = APIFlask(__name__, title="Blood Visualization app", version="2.0")
-#db = SQL("sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db")
+
 
 # Get the base directory of the application
 base_dir = os.path.abspath(os.path.dirname(__file__))

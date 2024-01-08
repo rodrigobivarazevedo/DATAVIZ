@@ -639,93 +639,62 @@
               "Uric acid": ["Potassium", "Sodium", "Chloride"]
           };
 
-        // Get the div where warnings will be displayed
-        const warningsDiv = document.getElementById("warnings");
-        // Clear existing warnings
-        warningsDiv.innerHTML = '';
-
-        // Iterate over the red indicators and display the information
-        redIndicators.forEach(originalIndicator => {
-            // Create a copy of the indicator for display purposes
-            const indicator = originalIndicator.split(' ').slice(0, -1).join(' ');
-
-            // Check if the indicator exists in bloodIndicatorInfo
-            if (bloodIndicatorKnowledgeBase[indicator]) {
-                const indicatorInfo = bloodIndicatorKnowledgeBase[indicator];
-                const relationships = bloodIndicatorsRelationships[indicator];
-
-                // Create a new paragraph element for the indicator
-                const indicatorParagraph = document.createElement("p");
-
-                // Create a button for the indicator and set its color to red
-                const indicatorButton = document.createElement("button");
-                indicatorButton.style.color = "red";
-                indicatorButton.textContent = `\u25BC ${indicator}`; // Unicode arrow down character
-
-                // Append the button to the indicator paragraph
-                indicatorParagraph.appendChild(indicatorButton);
-
-                // Append the indicator paragraph to the warnings div
-                warningsDiv.appendChild(indicatorParagraph);
-
-                // Create a new paragraph element for the information
-                const infoParagraph = document.createElement("p");
-
-                // Create a span for the relationships information
-                const relationshipsSpan = document.createElement("span");
-                relationshipsSpan.innerHTML = `<strong>Possible Deficiencies:</strong> ${relationships.join(', ')}<br>`;
-                relationshipsSpan.style.display = "none"; // Initially hide the relationships info
-
-                // Create a span for the possible deficiencies information
-                const deficienciesSpan = document.createElement("span");
-                deficienciesSpan.innerHTML = `<strong>Relationships:</strong> ${indicatorInfo.join(', ')}<br>`;
-                deficienciesSpan.style.display = "none"; // Initially hide the deficiencies info
-
-                // Add event listener to toggle visibility on click
-                indicatorButton.addEventListener("click", function () {
-                    // Toggle visibility for both spans
-                    relationshipsSpan.style.display = (relationshipsSpan.style.display === "none") ? "inline" : "none";
-                    deficienciesSpan.style.display = (deficienciesSpan.style.display === "none") ? "inline" : "none";
-                });
-
-                // Append the spans to the info paragraph
-                infoParagraph.appendChild(relationshipsSpan);
-                infoParagraph.appendChild(deficienciesSpan);
-
-                // Append the info paragraph to the warnings div
-                warningsDiv.appendChild(infoParagraph);
-
-            } else {
-                console.warn(`Information not available for blood indicator: ${indicator}`);
-            }
-        });
-
-
-
-
-
-
-}
+          const warningsDiv = document.getElementById("warnings");
+          warningsDiv.innerHTML = '';
+      
+          redIndicators.forEach(originalIndicator => {
+              const indicator = originalIndicator ? originalIndicator.split(' ').slice(0, -1).join(' ') : '';
+      
+              if (indicator && bloodIndicatorKnowledgeBase && bloodIndicatorKnowledgeBase[indicator]) {
+                  const indicatorInfo = bloodIndicatorKnowledgeBase[indicator];
+                  const relationships = bloodIndicatorsRelationships[indicator];
+      
+                  const indicatorParagraph = document.createElement("p");
+                  const indicatorButton = document.createElement("button");
+                  indicatorButton.style.color = "red";
+                  indicatorButton.textContent = `\u25BC ${indicator}`;
+                  indicatorParagraph.appendChild(indicatorButton);
+                  warningsDiv.appendChild(indicatorParagraph);
+      
+                  const infoParagraph = document.createElement("p");
+                  const relationshipsSpan = document.createElement("span");
+                  relationshipsSpan.innerHTML = `<strong>Possible Deficiencies:</strong> ${relationships ? relationships.join(', ') : ''}<br>`;
+                  relationshipsSpan.style.display = "none";
+                  const deficienciesSpan = document.createElement("span");
+                  deficienciesSpan.innerHTML = `<strong>Relationships:</strong> ${indicatorInfo ? indicatorInfo.join(', ') : ''}<br>`;
+                  deficienciesSpan.style.display = "none";
+      
+                  indicatorButton.addEventListener("click", function () {
+                      relationshipsSpan.style.display = (relationshipsSpan.style.display === "none") ? "inline" : "none";
+                      deficienciesSpan.style.display = (deficienciesSpan.style.display === "none") ? "inline" : "none";
+                  });
+      
+                  infoParagraph.appendChild(relationshipsSpan);
+                  infoParagraph.appendChild(deficienciesSpan);
+                  warningsDiv.appendChild(infoParagraph);
+      
+              } else {
+                  console.warn(`Information not available for blood indicator: ${indicator}`);
+              }
+          });
+      }
         
-    function FindRedIndicators(blood_test) {
-
+      function FindRedIndicators(blood_test) {
         let redIndicators = [];
-
-        // Iterate over the properties of the blood_test object
-        for (const key of Object.keys(blood_test)) {
-            const color = blood_test[key][1];
-            
-            // Check if the color is red
-            if (color === "red") {
-                redIndicators.push(key);
+    
+        if (blood_test) {
+            for (const key of Object.keys(blood_test)) {
+                const color = blood_test[key] ? blood_test[key][1] : '';
+    
+                if (color === "red") {
+                    redIndicators.push(key);
+                }
             }
         }
     
-        // Call function to display blood indicator info
         displayRedBloodIndicatorInfo(redIndicators);
         return redIndicators;
-
-}
+    }
 
 </script>
 
