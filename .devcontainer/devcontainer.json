@@ -19,6 +19,6 @@
     "forwardPorts": [5000],
   
     // Uncomment to use postCreateCommand after container creation.
-     "postCreateCommand": "pip install -r requirements-dev.txt && echo 'Post create command'"
+    //"postCreateCommand": "pip install -r requirements-dev.txt && echo 'Post create command'"
   }
   

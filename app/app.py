@@ -10,15 +10,15 @@ import json
 import traceback
 from apiflask import APIFlask
 
-app2 = APIFlask(__name__, title="Blood Visualization app", version="2.0")
+app = APIFlask(__name__, title="Blood Visualization app", version="2.0")
 db = SQL("sqlite:////home/rodrigo/repos/DATAVIZ_project/db/blood_tests.db")
 
 
-@app2.route("/fhir")
+@app.route("/fhir")
 def fhir():
     return render_template("fhir.html") 
 
-@app2.route('/process_cmp', methods=['POST'])
+@app.route('/process_cmp', methods=['POST'])
 def process_cmp():
     try:
         # Ensure the 'Content-Type' header is set to 'application/json'
@@ -51,7 +51,7 @@ def process_cmp():
 
 
    
-@app2.route('/fhir_bundle', methods=['POST'])
+@app.route('/fhir_bundle', methods=['POST'])
 def process_fhir_bundle():
     try:
         # Get the FHIR Bundle from the request
@@ -184,12 +184,12 @@ def process_fhir_bundle():
     
  
     
-@app2.route("/")
+@app.route("/")
 def patient_data():
     return render_template("views2.html")  
    
 # Sample raw data endpoint for patient data
-@app2.route('/<int:patientID>/raw', methods=["POST"])
+@app.route('/<int:patientID>/raw', methods=["POST"])
 def get_patient_raw(patientID):
     # Get patient information from the database
     patient_data = db.execute("SELECT * FROM patients_new WHERE ID = ?", patientID)
@@ -204,7 +204,7 @@ def get_patient_raw(patientID):
     return patient_data 
 
 # Sample FHIR data endpoint for Patient data
-@app2.route('/<int:patientID>/fhir', methods=["GET"])
+@app.route('/<int:patientID>/fhir', methods=["GET"])
 def get_patient_fhir(patientID):
     
     patient_data = db.execute("SELECT * FROM patients_new WHERE ID = ?", patientID)
@@ -228,7 +228,7 @@ def get_patient_fhir(patientID):
 
 
 
-@app2.route('/blood_tests/fhir/<int:patientID>', methods=['GET'])
+@app.route('/blood_tests/fhir/<int:patientID>', methods=['GET'])
 def get_blood_tests_fhir(patientID):
     # Build the URL for the raw data endpoint
     raw_data_url = url_for('blood_tests_raw', patientID=patientID, _external=True)
@@ -246,7 +246,7 @@ def get_blood_tests_fhir(patientID):
         # Handle the case where the raw data request fails
         return "Failed to retrieve raw blood test data.", response.status_code
 
-@app2.route("/blood_dates")
+@app.route("/blood_dates")
 def dates():
     q = request.args.get("q")
     if q:
@@ -258,7 +258,7 @@ def dates():
         
 # base_url}/blood_tests/{patient_id}?date={date_param}
 # Sample FHIR data endpoint for blood test
-@app2.route('/blood_tests/raw/<int:patientID>', methods=['GET'])
+@app.route('/blood_tests/raw/<int:patientID>', methods=['GET'])
 def get_blood_tests_raw(patientID):
     
     date_param_str = request.args.get('date', None)
@@ -314,7 +314,7 @@ def get_blood_tests_raw(patientID):
     
     return jsonify(combined_dict)
 
-@app2.route('/blood_tests_references/raw/<int:patientID>', methods=['GET'])
+@app.route('/blood_tests_references/raw/<int:patientID>', methods=['GET'])
 def get_blood_tests_references(patientID):
     
     patient_age = get_patient_raw(patientID)[0]["AGE"]
@@ -331,7 +331,7 @@ def get_blood_tests_references(patientID):
     return reference_ranges
 
 
-@app2.route('/all_blood_tests/raw/<int:patientID>', methods=['GET'])
+@app.route('/all_blood_tests/raw/<int:patientID>', methods=['GET'])
 def blood_tests_raw(patientID):
     date_param_str = request.args.get('date', None)
 
@@ -438,7 +438,7 @@ def blood_tests_raw(patientID):
                 combined_dict_all[key] = values + [reference_ranges_all[key]]
         return jsonify(colored_blood_test_data_all)
 
-@app2.route('/statistics/<string:blood_indicator>', methods=['GET'])
+@app.route('/statistics/<string:blood_indicator>', methods=['GET'])
 def statistics(blood_indicator):
     
     # Check if the blood indicator is in the summary_stats dictionary
@@ -456,4 +456,4 @@ def statistics(blood_indicator):
 
 
 if __name__ == '__main__':
-    app2.run(debug=True)
+    app.run(debug=True)
