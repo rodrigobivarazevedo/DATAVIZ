@@ -195,7 +195,7 @@ def process_fhir_bundle():
     
 @app.route("/")
 def patient_data():
-    return render_template("views2.html")  
+    return render_template("views.html")  
    
 # Sample raw data endpoint for patient data
 @app.route('/<int:patientID>/raw', methods=["POST"])

@@ -375,85 +375,94 @@
     
 
     function generateHistogram(data, selectedIndicator) {
-        d3.select('#histogram').selectAll('*').remove();
-        // Set up margin, width, and height
-        const margin = { top: 50, right: 20, bottom: 100, left: 40 };
-        const width = 700 - margin.left - margin.right;
-        const height = 400 - margin.top - margin.bottom;
-    
-        // Create SVG element
-        const svg = d3.select("#histogram")
-            .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    
-        // Extract unique values for color mapping
-        const uniqueColors = Array.from(new Set(data.map(entry => entry.Value[1])));
-    
-        // Define color scale
-        const colorScale = d3.scaleOrdinal()
-            .domain(['green', 'yellow', 'red'])
-            .range(['green', '#ffd800', '#c80815']);
-    
-        // Set up X and Y scales
-        const xScale = d3.scaleBand()
-            .domain(data.map(entry => entry.DATE))
-            .range([0, width])
-            .padding(0.1);
-    
-        const yScale = d3.scaleLinear()
-            .domain([0, d3.max(data, entry => entry.Value[0])])
-            .range([height, 0]);
-    
-        // Add X-axis
-        svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(xScale))
-            .selectAll("text")
-            .style("text-anchor", "end")
-            .attr("transform", "rotate(-45)")
-            .attr("dy", ".35em")
-            .attr("dx", "-.8em")
-            .style("font-size", "12px"); // Adjust the font size as needed
-    
-        // Add Y-axis
-        svg.append("g")
-            .call(d3.axisLeft(yScale))
-            .selectAll("text")
-            .style("font-size", "12px");
-    
-        // Add title
-        svg.append("text")
-            .attr("x", width / 2)
-            .attr("y", 0 - margin.top / 2)
-            .attr("text-anchor", "middle")
-            .style("font-size", "16px")
-            .text(`${selectedIndicator} Over Time`);
-    
-        // Add bars
-        svg.selectAll(".bar")
-            .data(data)
-            .enter().append("rect")
-            .attr("class", "bar")
-            .attr("x", entry => xScale(entry.DATE))
-            .attr("y", entry => yScale(entry.Value[0]))
-            .attr("width", xScale.bandwidth()) 
-            .attr("height", entry => height - yScale(entry.Value[0]))
-            .attr("fill", entry => colorScale(entry.Value[1]))
-    
-        // Add labels for each bar
-        svg.selectAll(".bar-label")
-            .data(data)
-            .enter().append("text")
-            .attr("class", "bar-label")
-            .attr("x", entry => xScale(entry.DATE) + xScale.bandwidth() / 2)
-            .attr("y", entry => yScale(entry.Value[0]) - 5) // Adjust the vertical position as needed
-            .attr("text-anchor", "middle")
-            .style("font-size", "12px") // Adjust the font size as needed
-            .text(entry => entry.Value[0]);
-    }
+    d3.select('#histogram').selectAll('*').remove();
+
+    // Set up margin, width, and height
+    const margin = { top: 50, right: 20, bottom: 100, left: 40 };
+    const width = 700 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+
+    // Create SVG element
+    const svg = d3.select("#histogram")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // Extract unique values for color mapping
+    const uniqueColors = Array.from(new Set(data.map(entry => entry.Value[1])));
+
+    // Define color scale
+    const colorScale = d3.scaleOrdinal()
+        .domain(['green', 'yellow', 'red'])
+        .range(['green', '#ffd800', '#c80815']);
+
+    // Set up X and Y scales
+    const xScale = d3.scaleBand()
+        .domain(data.map(entry => entry.DATE))
+        .range([0, width])
+        .padding(0.1); // Adjust the padding as needed
+
+    const yScale = d3.scaleLinear()
+        .domain([0, d3.max(data, entry => entry.Value[0])])
+        .range([height, 0]);
+
+    // Add X-axis
+    svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(xScale))
+        .selectAll("text")
+        .style("text-anchor", "end")
+        .attr("transform", "rotate(-45)")
+        .attr("dy", ".35em")
+        .attr("dx", "-.8em")
+        .style("font-size", "12px");
+
+    // Add Y-axis
+    svg.append("g")
+        .call(d3.axisLeft(yScale))
+        .selectAll("text")
+        .style("font-size", "12px");
+
+    // Add title
+    svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", 0 - margin.top / 2)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .text(`${selectedIndicator} Over Time`);
+
+    // Calculate bar width based on available space, but limit to a maximum width
+    const maxBarWidth = 90; // Set a maximum width for the bars
+    const barWidth = Math.min(xScale.bandwidth(), maxBarWidth);
+
+    // Add bars
+    svg.selectAll(".bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", entry => xScale(entry.DATE) + (xScale.bandwidth() - barWidth) / 2)
+        .attr("y", entry => yScale(entry.Value[0]))
+        .attr("width", barWidth)
+        .attr("height", entry => height - yScale(entry.Value[0]))
+        .attr("fill", entry => colorScale(entry.Value[1]));
+
+    // Add labels for each bar
+    svg.selectAll(".bar-label")
+        .data(data)
+        .enter().append("text")
+        .attr("class", "bar-label")
+        .attr("x", entry => xScale(entry.DATE) + xScale.bandwidth() / 2)
+        .attr("y", entry => yScale(entry.Value[0]) - 5)
+        .attr("text-anchor", "middle")
+        .style("font-size", "12px")
+        .text(entry => entry.Value[0]);
+}
+
+
+
+
     
     
     let activeButton = null;
