@@ -460,10 +460,6 @@
         .text(entry => entry.Value[0]);
 }
 
-
-
-
-    
     
     let activeButton = null;
 
@@ -513,9 +509,9 @@
 
         
             // Define margin and cell size
-            const margin = { top: 10, right: 0, bottom: 20, left: 240 };
+            const margin = { top: 10, right: 0, bottom: 20, left: 100};
             const cellSize = 30;
-            const cellWidth = 200;
+            const cellWidth = 250;
             const cellHeight = 25;
 
             d3.select('#date').text(`Blood test: ${date}`);
@@ -546,20 +542,22 @@
 
             // Add y-axis labels with word wrapping
             svg.selectAll('text')
-            .data(dataArray)
-            .enter().append('text')
-            .attr('x', margin.left - 10)
-            .attr('y', (d, i) => margin.top + i * cellHeight + cellHeight / 2)
-            .attr('dy', '0.10em')
-            .style('text-anchor', 'end')
-            .style('alignment-baseline', 'middle')
-            .style('fill', 'black')
-            .text(function (d) {
-                // Extract and display only the relevant part of the key
-                const words = d.key.split(/\s+/);
-                const keyWithoutUnits = words.slice(0, -1).join(' '); // Exclude the last word (metric unit)
-                return keyWithoutUnits;
-            });
+                .data(dataArray)
+                .enter().append('text')
+                .attr('x', margin.left + cellWidth / 2) // Place text in the center of the cell
+                .attr('y', (d, i) => margin.top + (i + 0.5) * cellHeight) // Use the center of each cell
+                .attr('dy', '0.10em')
+                .style('text-anchor', 'middle') // Center the text horizontally
+                .style('alignment-baseline', 'middle')
+                .style('fill', 'black')
+                .text(function (d) {
+                    // Extract and display only the relevant part of the key
+                    const words = d.key.split(/\s+/);
+                    const keyWithoutUnits = words.slice(0, -1).join(' '); // Exclude the last word (metric unit)
+                    return keyWithoutUnits;
+                });
+
+
 
             // Draw black lines between cells
             svg.selectAll('line')
