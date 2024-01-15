@@ -7,6 +7,6 @@
       "terminal.integrated.shell.linux": "/bin/sh"
   },
   "forwardPorts": [5000],
-  "postCreateCommand": "/bin/sh -c 'cd /workspaces/DATAVIZ_project/app && python app.py'",
-  "workspaceFolder": "/workspaces/DATAVIZ_project"
+  "postCreateCommand": "/bin/sh -c 'cd /workspaces/DATAVIZ_project/app && python app.py'"
+  
 }
