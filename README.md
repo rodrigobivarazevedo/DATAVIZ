@@ -2,12 +2,21 @@
 
 ### JSON Rest API
 
-The app provides raw json data or FHIR data via the routes:
+The app provides raw json data via the routes:
 
-- /patientID/raw/
-- /patientID/fhir/
-- /Blood_tests/raw/patientID
+- /patientID/raw/   
+- /Blood_tests/raw/patientID 
+
+The app provides FHIR data via the routes:
+
+- /patientID/fhir/   
 - /Blood_tests/fhir/patientID
+
+The app stores or reads sent FHIR data via the routes: 
+
+- /process_cmp  (read values from a comprehensive metabolic panel test encoded in FHIR)
+- /fhir_bundle  (process a FHIR bundle containing patient resource and collection of blood observations resources)
+
 
 ### The HTML views
 
