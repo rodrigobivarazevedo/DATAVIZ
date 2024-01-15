@@ -42,19 +42,19 @@
     
 </head>
 <body>
-<div class="container mt-2">
-    <h1 class="mb-4">Blood Tests Visualization App</h1>
+<div class="container-fluid mt-2">
+    
 
     <div class="row">
         <!-- First Card -->
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card">
                 <div class="card-header">
                     Patient Information
                 </div>
                 <div class="card-body">
                     
-                    <form id="patientInfoForm"  style="padding-top: 20px;">
+                    <form id="patientInfoForm"  style="padding-top: 10px;">
                         <!-- Prevents default form submission -->
                         <div class="form-group">
                             <label for="patientIDPatientInfo">Patient ID</label>
@@ -63,35 +63,25 @@
                     </form>
                 </br>
                     <div id="patientInfo"></div>
-
-                    <div>
-                        <label for="blood_test_dates" id="blood_test_dates">Available Blood Tests Dates</label>
-                        <ul></ul>
-                    </div>
                     
                 </div>
             </div>
         </div>
 
 <!-- Create a div where the graphs will take place -->
-        <div class="col-md-1">
-            <div class="mt-3" id="warnings" style="width: 300px;"></div>
-
-        </div>
-
-        <div class="col-md-2">
-            <div id="date"></div>
-            <div id="heatmap"></div>
+        <div class="col-md-4">
             
+                <div id="blood_test_dates"></div>
+                <div id="date"></div>
+                <div id="heatmap"></div>
+                
+            
+           
+
         </div>
 
-    </div>
-</div>
-
-<div class="container mt-1">
-    <!-- Dropdown Row -->
-    <div class="row mt-3">
-        <div class="col-md-6">
+        <div class="col-md-5">
+            
             <select id="bloodIndicators" class="form-control dropdown_item">
                 <option disabled selected>Select Blood Indicator over time...</option>
                 <option value="Albumin (g/dL)" name="Albumin (g/dL)">Albumin (g/dL)</option>
@@ -119,20 +109,35 @@
                 <option value="Globulin (g/dL)" name="Globulin (g/dL)">Globulin (g/dL)</option>
                 <option value="Triglycerides (mg/dL)" name="Triglycerides (mg/dL)">Triglycerides (mg/dL)</option>
             </select>
-    </div>
 
+            <div id="resultsContainer">
+                <div id="histogram"></div>
+            </div>
+            <div class="mt-2" id="blood_indicator"></div>
+            <div class="mt-1" id="violin_plot"></div>
+            
+        </div>
+
+    </div>
+</div>
+
+<div class="container-fluid mt-1">
+    <!-- Dropdown Row -->
+    <div class="row mt-3">
+        <div class="col-md-6">
+            
+        </div>
+    </div>
 
 
     <!-- Histogram and Mean Row -->
     <div class="row mt-3">
         <div class="col-md-9">
-            <div id="resultsContainer">
-                <div id="histogram"></div>
-            </div>
+            <div id="heatmaps"></div>
         </div>
         <div class="col-md-3">
-            <div class="mt-3" id="blood_indicator"></div>
-            <div class="mt-3" id="violin_plot"></div>
+            <div class="mt-3" id="warnings" style="width: 300px;"></div>
+            <div id="heatmaps"></div>
             
         </div>
         
@@ -239,7 +244,7 @@
         if (!patientID) {
             // Clear patient information and blood test dates if no input
             document.getElementById('patientInfo').innerHTML = '';
-            document.querySelector('ul').innerHTML = '';
+            document.getElementById('blood_test_dates').innerHTML = '';
             return;
         }
 
@@ -252,13 +257,44 @@
         // Fetch and display blood dates
         let response = await fetch('/blood_dates?q=' + patientID);
         let dates = await response.json();
-        let html = '';
+
+        // Create a new select element
+        let select = document.createElement('select');
+        select.id = 'blood_test_dropdown';
+        select.classList.add('form-control', 'dropdown_item');
+
+        // Create and add the default option
+        let defaultOption = document.createElement('option');
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        defaultOption.textContent = 'Select Blood Test Date...';
+        select.appendChild(defaultOption);
+
+        // Add options for each date
         for (let date of dates) {
-            html += `<li><button class="date-button" onclick="drawHeatmap('${patientID}', '${date.DATE}'); toggleButton(this); return false;">${date.DATE}</button></li>`;
+            let option = document.createElement('option');
+            option.value = date.DATE;
+            option.textContent = date.DATE;
+            select.appendChild(option);
         }
 
-        document.querySelector('ul').innerHTML = html;
+        // Attach a change event listener to the dropdown
+        select.addEventListener('change', function () {
+            let selectedDate = this.value;
+            if (selectedDate !== 'Select Blood Test Date...') {
+                // Call the desired functions when an option is selected
+                drawHeatmap(patientID, selectedDate);
+                toggleButton(selectedDate);
+            }
+        });
+
+        // Add the select element to the container
+        document.getElementById('blood_test_dates').innerHTML = ''; // Clear previous content
+        document.getElementById('blood_test_dates').appendChild(select);
     });
+
+
+
 
     async function fetchPatientData(patientID) {
         const url = `/${patientID}/raw`;
@@ -282,7 +318,7 @@
                 <p><strong>Patient ID:</strong> ${patientInfo.ID}</p>
                 <p><strong>First Name:</strong> ${patientInfo.FIRST_NAME}</p>
                 <p><strong>Last Name:</strong> ${patientInfo.LAST_NAME}</p>
-                <p><strong>Birth Date:</strong> ${patientInfo.BIRTH_DATE}</p>
+                <p><strong>Birth:</strong> ${patientInfo.BIRTH_DATE}</p>
                 <p><strong>Gender:</strong> ${patientInfo.GENDER}</p>
                 <p><strong>Age:</strong> ${patientInfo.AGE}</p>
             `;
@@ -342,10 +378,10 @@
         if (!boxPlotFormCreated) {
             // Create demographic distribution elements
             const demographicDistributionDiv = document.createElement('div');
-            demographicDistributionDiv.classList.add('mt-3');
+            demographicDistributionDiv.classList.add('mt-1');
 
             const label = document.createElement('label');
-            label.classList.add('mt-2');
+            label.classList.add('mt-1');
             label.innerHTML = '<strong>Demographic Distribution:</strong>';
             demographicDistributionDiv.appendChild(label);
 
@@ -376,7 +412,7 @@
 
     function generateHistogram(data, selectedIndicator) {
     d3.select('#histogram').selectAll('*').remove();
-
+    
     // Set up margin, width, and height
     const margin = { top: 50, right: 20, bottom: 100, left: 40 };
     const width = 700 - margin.left - margin.right;
@@ -460,22 +496,6 @@
         .text(entry => entry.Value[0]);
 }
 
-    
-    let activeButton = null;
-
-    function toggleButton(button) {
-        if (activeButton) {
-            // If there's an active button, remove the 'active' class
-            activeButton.classList.remove('active');
-        }
-
-        // Add the 'active' class to the clicked button
-        button.classList.add('active');
-        // Set the clicked button as the active button
-        activeButton = button;
-    }
-
-
     function drawHeatmap(patientID, date) {
 
         // Remove existing SVG element
@@ -500,8 +520,7 @@
             // Convert data to suitable format
             const dataArray = [];
             const dict = data; // Assuming there's only one dictionary in the list
-            FindRedIndicators(dict)
-
+    
             // Iterate over the dictionary entries
             for (const [key, [value, color]] of Object.entries(dict)) {
                 dataArray.push({ key, value, color });
@@ -509,7 +528,7 @@
 
         
             // Define margin and cell size
-            const margin = { top: 10, right: 0, bottom: 20, left: 100};
+            const margin = { top: 10, right: 0, bottom: 20, left: 10};
             const cellSize = 30;
             const cellWidth = 250;
             const cellHeight = 25;
@@ -590,118 +609,8 @@
         });
 }
 
-    function displayRedBloodIndicatorInfo(redIndicators) {
-        // Define information for each blood indicator
-        const bloodIndicatorKnowledgeBase = {
-            "Alanine aminotransferase ALT": ["Liver health"],
-            "Albumin": ["Liver function", "Kidney function"],
-            "Alkaline phosphatase": ["Liver health", "Bone health"],
-            "Aspartate aminotransferase AST": ["Liver health", "Heart health"],
-            "Bicarbonate": ["Acid-base balance"],
-            "Blood urea nitrogen": ["Kidney function"],
-            "Chloride": ["Electrolyte balance", "Kidney function"],
-            "Cholesterol": ["Cardiovascular health"],
-            "Creatine Phosphokinase (CPK)": ["Muscle health", "Heart health"],
-            "Creatinine": ["Kidney function"],
-            "Gamma glutamyl transferase": ["Liver health", "Bile ducts"],
-            "Globulin": ["Immune function"],
-            "Glucose, serum": ["Blood sugar levels", "Diabetes"],
-            "Iron, refrigerated": ["Iron levels in the body"],
-            "Lactate Dehydrogenase": ["Tissue damage"],
-            "Osmolality": ["Blood particle concentration"],
-            "Phosphorus": ["Bone health", "Kidney function"],
-            "Potassium": ["Heart function", "Muscle function"],
-            "Sodium": ["Fluid balance", "Nerve function", "Muscle function"],
-            "Total bilirubin": ["Liver function"],
-            "Total calcium": ["Bone health", "Muscle function"],
-            "Total protein": [""],
-            "Triglycerides": ["Cardiovascular health"],
-            "Uric acid": ["Gout", "Joint health"]
-          };
-          
-          const bloodIndicatorsRelationships = {
-              "Alanine aminotransferase ALT": ["Albumin", "Aspartate aminotransferase AST", "Total Bilirubin"],
-              "Albumin": ["Globulin", "Alanine aminotransferase", "Blood urea nitrogen"],
-              "Alkaline phosphatase": ["Alanine aminotransferase ALT", "Aspartate aminotransferase AST", "Gamma Glutamyl Transferase (GGT)"],
-              "Aspartate aminotransferase AST": ["Alanine aminotransferase ALT", "Albumin", "Total Bilirubin"],
-              "Bicarbonate": ["Chloride", "Sodium", "Potassium"],
-              "Blood urea nitrogen": ["Creatinine", "Albumin", "Chloride"],
-              "Chloride": ["Bicarbonate", "Sodium", "Potassium"],
-              "Cholesterol": ["Triglycerides", "High-Density Lipoprotein (HDL)", "Low-Density Lipoprotein (LDL)"],
-              "Creatine Phosphokinase (CPK)": ["Lactate Dehydrogenase (LDH)", "Aspartate aminotransferase AST", "Alanine aminotransferase ALT"],
-              "Creatinine": ["Blood urea nitrogen", "Phosphorus", "Potassium"],
-              "Gamma Glutamyl Transferase": ["Alkaline phosphatase", "ALT", "Aspartate aminotransferase AST"],
-              "Globulin": ["Albumin", "Total Protein", "A/G Ratio"],
-              "Glucose, serum": ["Hemoglobin A1c", "Insulin", "C-Peptide"],
-              "Iron, refrigerated": ["Total Iron Binding Capacity (TIBC)", "Transferrin", "Ferritin"],
-              "Lactate Dehydrogenase": ["Creatine Phosphokinase CPK", "Aspartate aminotransferase AST", "Alanine aminotransferase ALT"],
-              "Osmolality": ["Sodium", "Potassium", "Chloride"],
-              "Phosphorus": ["Calcium", "Vitamin D", "Parathyroid Hormone (PTH)"],
-              "Potassium": ["Sodium", "Chloride", "Bicarbonate"],
-              "Sodium": ["Potassium", "Chloride", "Bicarbonate"],
-              "Total bilirubin": ["Aspartate aminotransferase AST", "Alanine aminotransferase ALT", "Alkaline phosphatase"],
-              "Total calcium": ["Ionized Calcium", "Vitamin D", "Parathyroid Hormone (PTH)"],
-              "Total protein": ["Albumin", "Globulin", "A/G Ratio"],
-              "Triglycerides": ["Cholesterol", "High-Density Lipoprotein (HDL)", "Low-Density Lipoprotein (LDL)"],
-              "Uric acid": ["Potassium", "Sodium", "Chloride"]
-          };
+    
 
-          const warningsDiv = document.getElementById("warnings");
-          warningsDiv.innerHTML = '';
-      
-          redIndicators.forEach(originalIndicator => {
-              const indicator = originalIndicator ? originalIndicator.split(' ').slice(0, -1).join(' ') : '';
-      
-              if (indicator && bloodIndicatorKnowledgeBase && bloodIndicatorKnowledgeBase[indicator]) {
-                  const indicatorInfo = bloodIndicatorKnowledgeBase[indicator];
-                  const relationships = bloodIndicatorsRelationships[indicator];
-      
-                  const indicatorParagraph = document.createElement("p");
-                  const indicatorButton = document.createElement("button");
-                  indicatorButton.style.color = "red";
-                  indicatorButton.textContent = `\u25BC ${indicator}`;
-                  indicatorParagraph.appendChild(indicatorButton);
-                  warningsDiv.appendChild(indicatorParagraph);
-      
-                  const infoParagraph = document.createElement("p");
-                  const relationshipsSpan = document.createElement("span");
-                  relationshipsSpan.innerHTML = `<strong>Possible Deficiencies:</strong> ${relationships ? relationships.join(', ') : ''}<br>`;
-                  relationshipsSpan.style.display = "none";
-                  const deficienciesSpan = document.createElement("span");
-                  deficienciesSpan.innerHTML = `<strong>Relationships:</strong> ${indicatorInfo ? indicatorInfo.join(', ') : ''}<br>`;
-                  deficienciesSpan.style.display = "none";
-      
-                  indicatorButton.addEventListener("click", function () {
-                      relationshipsSpan.style.display = (relationshipsSpan.style.display === "none") ? "inline" : "none";
-                      deficienciesSpan.style.display = (deficienciesSpan.style.display === "none") ? "inline" : "none";
-                  });
-      
-                  infoParagraph.appendChild(relationshipsSpan);
-                  infoParagraph.appendChild(deficienciesSpan);
-                  warningsDiv.appendChild(infoParagraph);
-      
-              } else {
-                  console.warn(`Information not available for blood indicator: ${indicator}`);
-              }
-          });
-      }
-        
-      function FindRedIndicators(blood_test) {
-        let redIndicators = [];
-    
-        if (blood_test) {
-            for (const key of Object.keys(blood_test)) {
-                const color = blood_test[key] ? blood_test[key][1] : '';
-    
-                if (color === "red") {
-                    redIndicators.push(key);
-                }
-            }
-        }
-    
-        displayRedBloodIndicatorInfo(redIndicators);
-        return redIndicators;
-    }
 
 </script>
 
