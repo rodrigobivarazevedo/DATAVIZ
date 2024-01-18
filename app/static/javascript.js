@@ -164,31 +164,31 @@ function displayRedBloodIndicatorInfo(redIndicators) {
         "Uric acid": ["Gout", "Joint health"]
       };
       
-      const bloodIndicatorsRelationships = {
-          "Alanine aminotransferase ALT": ["Albumin", "Aspartate aminotransferase AST", "Total Bilirubin"],
-          "Albumin": ["Globulin", "Alanine aminotransferase", "Blood urea nitrogen"],
-          "Alkaline phosphatase": ["Alanine aminotransferase ALT", "Aspartate aminotransferase AST", "Gamma Glutamyl Transferase (GGT)"],
-          "Aspartate aminotransferase AST": ["Alanine aminotransferase ALT", "Albumin", "Total Bilirubin"],
-          "Bicarbonate": ["Chloride", "Sodium", "Potassium"],
-          "Blood urea nitrogen": ["Creatinine", "Albumin", "Chloride"],
-          "Chloride": ["Bicarbonate", "Sodium", "Potassium"],
-          "Cholesterol": ["Triglycerides", "High-Density Lipoprotein (HDL)", "Low-Density Lipoprotein (LDL)"],
-          "Creatine Phosphokinase (CPK)": ["Lactate Dehydrogenase (LDH)", "Aspartate aminotransferase AST", "Alanine aminotransferase ALT"],
-          "Creatinine": ["Blood urea nitrogen", "Phosphorus", "Potassium"],
-          "Gamma Glutamyl Transferase": ["Alkaline phosphatase", "ALT", "Aspartate aminotransferase AST"],
-          "Globulin": ["Albumin", "Total Protein", "A/G Ratio"],
-          "Glucose, serum": ["Hemoglobin A1c", "Insulin", "C-Peptide"],
-          "Iron, refrigerated": ["Total Iron Binding Capacity (TIBC)", "Transferrin", "Ferritin"],
-          "Lactate Dehydrogenase": ["Creatine Phosphokinase CPK", "Aspartate aminotransferase AST", "Alanine aminotransferase ALT"],
-          "Osmolality": ["Sodium", "Potassium", "Chloride"],
-          "Phosphorus": ["Calcium", "Vitamin D", "Parathyroid Hormone (PTH)"],
-          "Potassium": ["Sodium", "Chloride", "Bicarbonate"],
-          "Sodium": ["Potassium", "Chloride", "Bicarbonate"],
-          "Total bilirubin": ["Aspartate aminotransferase AST", "Alanine aminotransferase ALT", "Alkaline phosphatase"],
-          "Total calcium": ["Ionized Calcium", "Vitamin D", "Parathyroid Hormone (PTH)"],
-          "Total protein": ["Albumin", "Globulin", "A/G Ratio"],
-          "Triglycerides": ["Cholesterol", "High-Density Lipoprotein (HDL)", "Low-Density Lipoprotein (LDL)"],
-          "Uric acid": ["Potassium", "Sodium", "Chloride"]
+      const bloodIndicatorRelations = {
+        "Alanine Aminotransferase (ALT)": [],
+        "Albumin": ["Globulin", "Total Protein"],
+        "Alkaline Phosphatase": ["Total Calcium", "Phosphorus"],
+        "Aspartate Aminotransferase (AST)": [],
+        "Bicarbonate": ["Chloride", "Sodium"],
+        "Blood Urea Nitrogen (BUN)": ["Creatinine"],
+        "Chloride": ["Bicarbonate", "Sodium", "Potassium"],
+        "Cholesterol": ["Triglycerides"],
+        "Creatine Phosphokinase (CPK)": ["Lactate Dehydrogenase"],
+        "Creatinine": ["BUN (Blood Urea Nitrogen)"],
+        "Gamma Glutamyl Transferase": [],
+        "Globulin": ["Albumin", "Total Protein"],
+        "Glucose, Serum": [],
+        "Iron, Refrigerated": [],
+        "Lactate Dehydrogenase": ["CPK (Creatine Phosphokinase)"],
+        "Osmolality": [],
+        "Phosphorus": ["Alkaline Phosphatase"],
+        "Potassium": ["Sodium", "Chloride"],
+        "Sodium": ["Chloride", "Bicarbonate", "Potassium"],
+        "Total Bilirubin": [],
+        "Total Calcium": ["Alkaline Phosphatase", "Phosphorus"],
+        "Total Protein": ["Albumin", "Globulin"],
+        "Triglycerides": ["Cholesterol"],
+        "Uric Acid": ["Potassium", "Sodium", "Chloride"]
       };
 
       const warningsDiv = document.getElementById("warnings");

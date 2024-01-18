@@ -42,7 +42,7 @@ function drawBoxPlot(data) {
         .range([0, width]);
     svg.call(d3.axisBottom(x));
 
-    // a few features for the box
+    
     var center = height / 2;
     var boxHeight = 50;
 
@@ -130,7 +130,7 @@ input.addEventListener('input', async function () {
         if (selectedDate !== 'Select Blood Test Date...') {
             // Call the desired functions when an option is selected
             drawHeatmap(patientID, selectedDate);
-            toggleButton(selectedDate);
+            //toggleButton(selectedDate);
         }
     });
 
@@ -217,8 +217,8 @@ function getValuesOverTime(formattedBloodTests, selectedIndicator, ranges) {
     //resultContainer.innerHTML = '<h4>Results overtime for ' + selectedIndicator + '</h4>';
 
     display_history_mean(range, blood_indicator_history, selectedIndicator)
-    generateHistogram(blood_indicator_history,selectedIndicator)
-
+    generateHistogram(blood_indicator_history,selectedIndicator);
+    
     // Display results on the screen
     const violinPlotDiv = document.getElementById('violin_plot');
     if (!boxPlotFormCreated) {
@@ -239,8 +239,40 @@ function getValuesOverTime(formattedBloodTests, selectedIndicator, ranges) {
         boxPlotFormCreated = true; // Set the flag to true after creating the form
     } 
     updateBoxPlot(selectedIndicator.split(" ").slice(0, -1).join(' ').trim())
-    
+   
+    generateLineChart(formattedBloodTests, selectedIndicator, blood_indicators_relationships(selectedIndicator));
 
+}
+
+function blood_indicators_relationships(selectedIndicator){
+    const bloodIndicatorRelations = {
+        "Alanine aminotransferase ALT (U/L)": [],
+        "Albumin (g/dL)": ["Globulin (g/dL)", "Total protein (g/dL)"],
+        "Alkaline phosphatase (U/L)": ["Total calcium (mg/dL)", "Phosphorus (mg/dL)"],
+        "Aspartate aminotransferase AST (U/L)": [],
+        "Bicarbonate (mmol/L)": ["Chloride (mmol/L)", "Sodium (mmol/L)"],
+        "Blood urea nitrogen (mg/dL)": ["Creatinine (mg/dL)"],
+        "Chloride": ["Bicarbonate (mmol/L)", "Sodium (mmol/L)", "Potassium (mmol/L)"],
+        "Cholesterol (mg/dL)": ["Triglycerides (mg/dL)"],
+        "Creatine Phosphokinase (CPK) (IU/L)": ["Lactate Dehydrogenase (U/L)"],
+        "Creatinine": ["Blood urea nitrogen (mg/dL)"],
+        "Gamma Glutamyl Transferase": [],
+        "Globulin": ["Albumin (g/dL)", "Total protein (g/dL)"],
+        "Glucose, Serum": [],
+        "Iron, Refrigerated": [],
+        "Lactate Dehydrogenase": ["Creatine Phosphokinase (CPK) (IU/L)"],
+        "Osmolality": [],
+        "Phosphorus": ["Alkaline phosphatase (U/L)"],
+        "Potassium": ["Sodium (mmol/L)", "Chloride (mmol/L)"],
+        "Sodium": ["Chloride (mmol/L)", "Bicarbonate (mmol/L)", "Potassium (mmol/L)"],
+        "Total Bilirubin": [],
+        "Total calcium (mg/dL)": ["Alkaline phosphatase (U/L)", "Phosphorus (mg/dL)"],
+        "Total Protein": ["Albumin (g/dL)", "Globulin (g/dL)"],
+        "Triglycerides": ["Cholesterol (mg/dL)"],
+        "Uric Acid": ["Potassium (mmol/L)", "Sodium (mmol/L)", "Chloride (mmol/L)"]
+      };
+      
+      return bloodIndicatorRelations[selectedIndicator];    
 }
 
 function display_history_mean(referenceRange, blood_indicator_history, selectedIndicator) {
@@ -453,4 +485,94 @@ function drawHeatmap(patientID, date) {
         console.error('Error fetching data:', error);
         // Add error handling here, e.g., display an error message to the user
     });
+}
+
+
+function generateLineChart(data, selectedIndicator, Indicators) {
+    // Clear existing content in the 'linechart' div
+    d3.select('#linechart').selectAll('*').remove();
+
+    // Set up margin, width, and height
+    const margin = { top: 50, right: 20, bottom: 100, left: 40 };
+    const width = 700 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+
+    // Create SVG element
+    const svg = d3.select("#linechart")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // Extract dates from data
+    const dates = data.map(entry => entry['DATE'][0]);
+
+    // Create a color scale based on the provided colors in the data
+    const colorScale = d3.scaleOrdinal()
+        .domain(Indicators)
+        .range(['#3498db', '#ffd800', '#c0392b']);
+
+        if (Indicators.length > 0) {
+            // Create a line for each indicator
+            Indicators.forEach((indicator, index) => {
+                const values = data.map(entry => entry[indicator][0]);
+        
+                const line = d3.line()
+                    .x((d, i) => i * (width / (dates.length - 1)))
+                    .y(d => height - (d * (height / d3.max(data, entry => entry[indicator][0]))));
+        
+                // Add line
+                svg.append('path')
+                    .datum(values)
+                    .attr('fill', 'none')
+                    .attr('stroke', colorScale(indicator))
+                    .attr('stroke-width', 2)
+                    .attr('d', line);
+        
+                // Add label text with dynamic y-position
+                svg.append('text')
+                    .attr('x', width / 2)  // Adjust the x-position as needed
+                    .attr('y', (index + 1) * 20)  // Space out labels vertically
+                    .attr('dy', '1em')
+                    .style('font-size', '12px')
+                    .style('text-anchor', 'middle')
+                    .style('fill', colorScale(indicator))
+                    .text(indicator);
+            });
+        } else {
+            // Display only the selected indicator if Indicators is empty
+            const values = data.map(entry => entry[selectedIndicator][0]);
+        
+            const line = d3.line()
+                .x((d, i) => i * (width / (dates.length - 1)))
+                .y(d => height - (d * (height / d3.max(data, entry => entry[selectedIndicator][0]))));
+        
+            // Add line
+            svg.append('path')
+                .datum(values)
+                .attr('fill', 'none')
+                .attr('stroke', colorScale(selectedIndicator))
+                .attr('stroke-width', 2)
+                .attr('d', line);
+        
+            // Add label text at a fixed position above the line
+            svg.append('text')
+                .attr('x', width / 2)  // Adjust the x-position as needed
+                .attr('y', 20)  // Place the label above the chart
+                .attr('dy', '1em')
+                .style('font-size', '12px')
+                .style('text-anchor', 'middle')
+                .style('fill', colorScale(selectedIndicator))
+                .text(selectedIndicator);
+        }
+
+    // Add X axis
+    svg.append('g')
+        .attr('transform', 'translate(0,' + height + ')')
+        .call(d3.axisBottom(d3.scalePoint().domain(dates).range([0, width])));
+
+    // Add Y axis
+    svg.append('g')
+        .call(d3.axisLeft(d3.scaleLinear().domain([0, d3.max(data, entry => entry[selectedIndicator][0])]).range([height, 0])));
 }

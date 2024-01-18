@@ -445,6 +445,7 @@ def blood_tests_raw(patientID):
         for key, values in colored_blood_test_data_all[0].items():
             if key in reference_ranges_all:
                 combined_dict_all[key] = values + [reference_ranges_all[key]]
+        print(colored_blood_test_data_all)
         return jsonify(colored_blood_test_data_all)
 
 @app.route('/statistics/<string:blood_indicator>', methods=['GET'])
