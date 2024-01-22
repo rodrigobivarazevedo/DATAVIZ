@@ -40,11 +40,38 @@ def process_cmp():
         # Initialize a dictionary to store blood indicators and values
         blood_results = {}
 
+        map = {
+        "Albumin [Mass/volume] in Serum or Plasma" :'Albumin',
+        'Alanine aminotransferase [Enzymatic activity/volume] in Serum or Plasma':'Alanine aminotransferase ALT',
+        'Asp' :'Aspartate aminotransferase AST',
+        'Alkaline phosphatase [Enzymatic activity/volume] in Serum or Plasma' :'Alkaline phosphatase',
+        "Urea nitrogen [Mass/volume] in Blood" :'Blood urea nitrogen',
+        "Calcium [Mass/volume] in Serum or Plasma" :'Total calcium',
+        "Creatine kinase [Enzymatic activity/volume] in Serum or Plasma" :'Creatine Phosphokinase (CPK)',
+        'Cholesterol [Mass/volume] in Serum or Plasma' :'Cholesterol',
+        'Bicarbonate [Moles/volume] in Serum or Plasma':'Bicarbonate',
+        'Creatinine [Mass/volume] in Blood' :'Creatinine',
+        'Gamma glutamyl transferase [Enzymatic activity/volume] in Serum or Plasma' :'Gamma glutamyl transferase',
+        'Glucose [Mass/volume] in Blood' :'Glucose, serum',
+        "Iron [Mass/volume] in Serum or Plasma" :'Iron, refrigerated',
+        "Lactate dehydrogenase [Enzymatic activity/volume] in Serum or Plasma" :'Lactate Dehydrogenase',
+        "Phosphate [Mass/volume] in Serum or Plasma" :'Phosphorus',
+        "Bilirubin.total [Mass/volume] in Blood" :'Total bilirubin', 
+        "Protein [Mass/volume] in Serum or Plasma" :'Total protein',
+        "Urate [Mass/volume] in Serum or Plasma" :'Uric acid',
+        "Sodium [Moles/volume] in Blood" :'Sodium',
+        "Potassium [Moles/volume] in Blood" :'Potassium',
+        'Chloride [Moles/volume] in Serum or Plasma' :'Chloride',
+        "Osmolality of Serum or Plasma" :'Osmolality',
+        "Globulin [Mass/volume] in Serum" :'Globulin',
+        "Triglyceride [Moles/volume] in Serum or Plasma" :'Triglycerides'
+        }
+
         # Iterate through entries in the Bundle
         for entry in fhir_bundle.entry:
             if entry.resource.resource_type == "Observation":
                  # Extract blood indicator and value from Observation
-                code_display = entry.resource.code.text
+                code_display = map[entry.resource.code.text]
                 value_quantity = float(entry.resource.valueQuantity.value)  # Convert Decimal to float
                 unit = entry.resource.valueQuantity.unit
                 effective_date = entry.resource.effectiveDateTime  # Extract effective date
@@ -445,7 +472,6 @@ def blood_tests_raw(patientID):
         for key, values in colored_blood_test_data_all[0].items():
             if key in reference_ranges_all:
                 combined_dict_all[key] = values + [reference_ranges_all[key]]
-        print(colored_blood_test_data_all)
         return jsonify(colored_blood_test_data_all)
 
 @app.route('/statistics/<string:blood_indicator>', methods=['GET'])
