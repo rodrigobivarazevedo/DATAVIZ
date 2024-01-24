@@ -116,8 +116,6 @@ function drawHeatmap(patientID, date) {
             
         })
         .then(data => {
-            
-        const combined_dict = data; 
         // Convert data to suitable format
         const dataArray = [];
         const dict = data; // Assuming there's only one dictionary in the list
@@ -130,7 +128,6 @@ function drawHeatmap(patientID, date) {
     
         // Define margin and cell size
         const margin = { top: 10, right: 0, bottom: 20, left: 10};
-        const cellSize = 30;
         const cellWidth = 250;
         const cellHeight = 25;
 
@@ -157,7 +154,7 @@ function drawHeatmap(patientID, date) {
             .style('fill', d => colorScale(d.color))
             .on('mouseover', function (event, d) {
                 // Display blood level on mouse hover
-                d3.select(this).append('title').text(`Blood Level: ${d.value}`);
+                d3.select(this).append('title').text(`${d.key} Level: ${d.value}`);
             })
             .on('click', function (event, d) {
                 heatmap_cell_clicked(d.key, d.value);
@@ -173,6 +170,10 @@ function drawHeatmap(patientID, date) {
             .style('text-anchor', 'middle') // Center the text horizontally
             .style('alignment-baseline', 'middle')
             .style('fill', 'black')
+            .on('mouseover', function (event, d) {
+                // Display blood level on mouse hover
+                d3.select(this).append('title').text(`${d.key} Level: ${d.value}`);
+            })
             .text(function (d) {
                 // Extract and display only the relevant part of the key
                 const words = d.key.split(/\s+/);

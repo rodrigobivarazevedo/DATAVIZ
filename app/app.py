@@ -1,6 +1,5 @@
 from flask import request, jsonify, render_template
 from datetime import datetime
-import requests
 from cs50 import SQL
 from healthy_levels import healthy_levels_young_adults, older_adults_reference_ranges, older_elderly_reference_ranges
 from blood_functions import color_mapping
