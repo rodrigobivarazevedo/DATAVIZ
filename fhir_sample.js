@@ -1,4 +1,4 @@
-{
+fhir_blood_test = {
     "resourceType": "Bundle",
     "type": "collection",
     "entry": [

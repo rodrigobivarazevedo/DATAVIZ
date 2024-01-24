@@ -146,7 +146,7 @@ def process_fhir_bundle():
                 existing_data = db.execute("""
                     SELECT * FROM blood_indicators
                     WHERE ID = ? AND DATE = ?
-                """, patient_id, blood_results['Albumin']['effective_date'])
+                """, patient_id, blood_results["Albumin [Mass/volume] in Serum or Plasma"]['effective_date'])
 
             if not existing_data:
                 # Insert blood test results into the 'blood_indicators' table
@@ -181,36 +181,38 @@ def process_fhir_bundle():
                             ) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                             patient_id, 
-                            blood_results['Albumin']['effective_date'],
-                            blood_results['Albumin']["value"],
-                            blood_results['Alanine aminotransferase ALT']["value"],
-                            blood_results['Aspartate aminotransferase AST']["value"],
-                            blood_results['Alkaline phosphatase']["value"],
-                            blood_results['Blood urea nitrogen']["value"], 
-                            blood_results['Total calcium']["value"], 
-                            blood_results['Creatine Phosphokinase (CPK)']["value"], 
-                            blood_results['Cholesterol']["value"],
-                            blood_results['Bicarbonate']["value"],
-                            blood_results['Creatinine']["value"],
-                            blood_results['Gamma glutamyl transferase']["value"], 
-                            blood_results['Glucose, serum']["value"],
-                            blood_results['Iron, refrigerated']["value"],
-                            blood_results['Lactate Dehydrogenase']["value"],
-                            blood_results['Phosphorus']["value"], 
-                            blood_results['Total bilirubin']["value"], 
-                            blood_results['Total protein']["value"],
-                            blood_results['Uric acid']["value"], 
-                            blood_results['Sodium']["value"], 
-                            blood_results['Potassium']["value"],
-                            blood_results['Chloride']["value"], 
-                            blood_results['Osmolality']["value"],
-                            blood_results['Globulin']["value"], 
-                            blood_results['Triglycerides']["value"])
+                            blood_results["Albumin [Mass/volume] in Serum or Plasma"]['effective_date'],
+                            blood_results["Albumin [Mass/volume] in Serum or Plasma"]["value"],
+                            blood_results['Alanine aminotransferase [Enzymatic activity/volume] in Serum or Plasma']["value"],
+                            blood_results['Asp']["value"],
+                            blood_results['Alkaline phosphatase [Enzymatic activity/volume] in Serum or Plasma']["value"],
+                            blood_results["Urea nitrogen [Mass/volume] in Blood"]["value"], 
+                            blood_results["Calcium [Mass/volume] in Serum or Plasma"]["value"], 
+                            blood_results["Creatine kinase [Enzymatic activity/volume] in Serum or Plasma"]["value"], 
+                            blood_results['Cholesterol [Mass/volume] in Serum or Plasma']["value"],
+                            blood_results['Bicarbonate [Moles/volume] in Serum or Plasma']["value"],
+                            blood_results['Creatinine [Mass/volume] in Blood']["value"],
+                            blood_results['Gamma glutamyl transferase [Enzymatic activity/volume] in Serum or Plasma']["value"], 
+                            blood_results["Glucose [Mass/volume] in Blood"]["value"],
+                            blood_results["Iron [Mass/volume] in Serum or Plasma"]["value"],
+                            blood_results["Lactate dehydrogenase [Enzymatic activity/volume] in Serum or Plasma"]["value"],
+                            blood_results["Phosphate [Mass/volume] in Serum or Plasma"]["value"], 
+                            blood_results["Bilirubin.total [Mass/volume] in Blood"]["value"], 
+                            blood_results["Protein [Mass/volume] in Serum or Plasma"]["value"],
+                            blood_results["Urate [Mass/volume] in Serum or Plasma"]["value"], 
+                            blood_results["Sodium [Moles/volume] in Blood"]["value"], 
+                            blood_results["Potassium [Moles/volume] in Blood"]["value"],
+                            blood_results['Chloride [Moles/volume] in Serum or Plasma']["value"], 
+                            blood_results["Osmolality of Serum or Plasma"]["value"],
+                            blood_results["Globulin [Mass/volume] in Serum"]["value"], 
+                            blood_results["Triglyceride [Moles/volume] in Serum or Plasma"]["value"])
+                
+
                     
 
-                return jsonify({"message": "Data stored successfully","patient_id": patient_id, "patient_info": patient_info, "blood_results": blood_results}), 200
+                return jsonify({"message": "Data stored successfully","patient_id": patient_id, "patient_info": patient_info, "blood test results": blood_results}), 200
             else:
-                return jsonify({"message": "Blood results for this patient and date already exist", "patient_id": patient_id, "patient_info": patient_info, "blood_results": existing_data}), 400
+                return jsonify({"message": "Blood results for this patient and date already exist", "existing blood test": existing_data, "patient_id": patient_id, "patient_info": patient_info}), 400
         else:
             return jsonify({"message": "problems receiving data"}), 500
     except Exception as e:

@@ -354,7 +354,7 @@ cmp_fhir = {
           },
           "valueQuantity": {
             "value": 290,
-            "unit": "mOsm/kg"
+            "unit": "mmol/kg"
           },
           "effectiveDateTime": "2022-01-04T08:00:00Z"
         }
@@ -573,7 +573,7 @@ real_fhir_bundle = {
                 "value" : "123-45-6789"
                 }
               ],  
-              "active": true,
+              "active": True,
               "name": [
                 {
                   "use": "official",
@@ -945,7 +945,7 @@ real_fhir_bundle = {
           },
           "valueQuantity": {
             "value": 290,
-            "unit": "mOsm/kg"
+            "unit": "mmol/kg"
           },
           "effectiveDateTime": "2022-01-04T08:00:00Z"
         }
@@ -1143,6 +1143,8 @@ if response.status_code == 200:
 else:
     print(f"Error: {response.status_code}")
     print(response.text)  # Print the response content for debugging
+
+
 
 
 

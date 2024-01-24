@@ -86,6 +86,11 @@ input.addEventListener('input', async function () {
     // Get values from form inputs
     var patientID = input.value;
 
+    d3.select('#histogram').selectAll('*').remove();
+    d3.select('#heatmap').selectAll('*').remove();
+    d3.select('#linechart').selectAll('*').remove();
+    d3.select('#violin_plot').selectAll('*').remove();
+    document.getElementById("blood_indicator").innerHTML = '';
     // Check if there is no input
     if (!patientID) {
         // Clear patient information and blood test dates if no input
