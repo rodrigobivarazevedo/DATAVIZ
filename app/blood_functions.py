@@ -26,68 +26,6 @@ def color_mapping(blood_test, reference_ranges):
         colored_indicators[indicator_name] = [level, get_blood_level_color(indicator_name, level, reference_ranges)]
     return colored_indicators
 
-# fucntion to tranform into FHIR format
-def transform_to_fhir_blood_test(data, patient_reference):
-    
-    fhir_observation = {
-        "resourceType": "Observation",
-        "status": "final",
-        "category": [
-            {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                        "code": "laboratory",
-                        "display": "Laboratory"
-                    }
-                ],
-                "text": "Laboratory"
-            }
-        ],
-        "code": {
-            "coding": [
-                {
-                    "system": "http://loinc.org",
-                    "code": "24357-5",
-                    "display": "Blood Panel"
-                }
-            ],
-            "text": "Blood Panel"
-        },
-        "subject": {
-            "reference": f"Patient/{patient_reference}"
-        },
-        
-        "component": []
-    }
-
-    for test_name, (result_value, color) in data.items():
-        unit, unit_code = determine_unit_and_code(test_name)
-        interpretation_code = determine_interpretation_code(color)
-        component = {
-            "code": {
-                "text": test_name
-            },
-            "valueQuantity": {
-                "value": result_value,
-                "unit": unit,
-                "system": "http://unitsofmeasure.org",
-                "code": unit_code
-            },
-            "interpretation": {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
-                        "code": interpretation_code,
-                        "display": interpretation_code.capitalize()
-                    }
-                ]
-            }
-        }
-        fhir_observation["component"].append(component)
-        
-    # Convert the dictionary to an OrderedDict
-    return fhir_observation
 
 
 def determine_unit_and_code(test_name):

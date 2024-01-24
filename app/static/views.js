@@ -102,7 +102,7 @@ function drawHeatmap(patientID, date) {
     // Remove existing SVG element
     d3.select('#heatmap').selectAll('*').remove();
     d3.select('#date').remove();
-    fetch(`/blood_tests/raw/${patientID}?date=${date}`, {
+    fetch(`/all_blood_tests/raw/${patientID}?date=${date}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -160,7 +160,6 @@ function drawHeatmap(patientID, date) {
                 d3.select(this).append('title').text(`Blood Level: ${d.value}`);
             })
             .on('click', function (event, d) {
-                console.log(`Clicked on text with key: ${d.key} ${d.value}`);
                 heatmap_cell_clicked(d.key, d.value);
             });
 
@@ -181,9 +180,6 @@ function drawHeatmap(patientID, date) {
                 return keyWithoutUnits;
             })
             .on('click', function (event, d) {
-                // Call your function here with the desired parameters
-                // For example, you can replace the alert with your function call
-                console.log(`Clicked on text with key: ${d.key} ${d.value}`);
                 heatmap_cell_clicked(d.key, d.value);
             });
 
@@ -209,7 +205,6 @@ function drawHeatmap(patientID, date) {
         .style('fill', 'black')
         .text(d => `${d.value} ${d.key.split(/\s+/).pop()}`)
         .on('click', function (event, d) {
-            console.log(`Clicked on text with key: ${d.key} ${d.value}`);
             heatmap_cell_clicked(d.key, d.value);
         }); 
     })
@@ -388,8 +383,6 @@ svg.selectAll(".bar-label")
     // Fetch blood indicator statistics
     var response = await fetch('/statistics/' + bloodIndicator);
     var fetchedData = await response.json();
-    console.log(fetchedData, value);
-
     // Draw the box plot with fetched data and user input
     drawBoxPlot(fetchedData, value);
 }

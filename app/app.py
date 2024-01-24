@@ -1,9 +1,9 @@
-from flask import Flask, request, jsonify, render_template, url_for
+from flask import request, jsonify, render_template
 from datetime import datetime
 import requests
 from cs50 import SQL
 from healthy_levels import healthy_levels_young_adults, older_adults_reference_ranges, older_elderly_reference_ranges
-from blood_functions import color_mapping, transform_to_fhir_blood_test
+from blood_functions import color_mapping
 from summary_stats import summary_stats
 from fhir.resources.bundle import Bundle
 import json
@@ -241,6 +241,7 @@ def get_patient_raw(patientID):
     patient_data[0]["AGE"] = age
     return patient_data 
 
+
 # Sample FHIR data endpoint for Patient data
 @app.route('/<int:patientID>/fhir', methods=["GET"])
 def get_patient_fhir(patientID):
@@ -248,41 +249,33 @@ def get_patient_fhir(patientID):
     patient_data = db.execute("SELECT * FROM patients_new WHERE ID = ?", patientID)
     patient_data_dict = patient_data[0]
     fhir_patient = {
-        "resourceType": "Patient",
-        "id": patient_data_dict["ID"],
-        "name": [
-            {
-                "given": patient_data_dict["FIRST_NAME"],
-                "family": patient_data_dict["LAST_NAME"],
-            }
-        ],
-        "birthDate": str(patient_data_dict["BIRTH_DATE"]),
-        "gender": patient_data_dict["GENDER"]
-        
-    }
+            "resourceType": "Patient",
+            "text": {
+                "status": "generated",
+                "div": f"<div xmlns=\"http://www.w3.org/1999/xhtml\">{patient_data_dict['FIRST_NAME']} {patient_data_dict['LAST_NAME']} (MRN: {patient_data_dict['ID']})</div>"
+            },
+            "identifier": [
+                {
+                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                    "value": str(patient_data_dict["ID"])
+                }
+            ],
+            "active": True,
+            "name": [
+                {
+                    "use": "official",
+                    "family": patient_data_dict["LAST_NAME"],
+                    "given": [patient_data_dict["FIRST_NAME"]]
+                }
+            ],
+            "gender": patient_data_dict["GENDER"],
+            "birthDate": str(patient_data_dict["BIRTH_DATE"])
+        }
+    
 
     # Convert to regular dictionary if needed
     return jsonify(fhir_patient)
 
-
-
-@app.route('/blood_tests/fhir/<int:patientID>', methods=['GET'])
-def get_blood_tests_fhir(patientID):
-    # Build the URL for the raw data endpoint
-    raw_data_url = url_for('blood_tests_raw', patientID=patientID, _external=True)
-
-    # Make a request to the raw data endpoint
-    response = requests.get(raw_data_url)
-
-    if response.status_code == 200:
-        # Process blood_tests as needed and return the raw data with colors
-        colored_blood_test_data = response.json()
-
-        # Transform each blood test data to FHIR format
-        return [transform_to_fhir_blood_test(blood_test, patientID) for blood_test in colored_blood_test_data]
-    else:
-        # Handle the case where the raw data request fails
-        return "Failed to retrieve raw blood test data.", response.status_code
 
 @app.route("/blood_dates")
 def dates():
@@ -293,65 +286,6 @@ def dates():
         dates = []
     return dates
     
-        
-# base_url}/blood_tests/{patient_id}?date={date_param}
-# Sample FHIR data endpoint for blood test
-@app.route('/blood_tests/raw/<int:patientID>', methods=['GET'])
-def get_blood_tests_raw(patientID):
-    
-    date_param_str = request.args.get('date', None)
-    date_param = datetime.strptime(date_param_str, '%Y-%m-%d').date()
-    try:
-        query = "SELECT * FROM blood_indicators WHERE ID = ? AND `DATE` = ?"
-        values = (patientID, date_param)
-        blood_tests = db.execute(query, *values)
-    
-    except Exception as e:
-        print("Error executing SQL query:", e)
-
-  
-    formated_blood_tests = []
-    for blood_test in blood_tests:
-        formated_blood_tests.append({
- 
-            'Albumin (g/dL)': blood_test['Albumin_g_dL'],
-            'Alanine aminotransferase ALT (U/L)': blood_test['Alanine_aminotransferase_ALT_U_L'],
-            'Aspartate aminotransferase AST (U/L)': blood_test['Aspartate_aminotransferase_AST_U_L'],
-            'Alkaline phosphatase (U/L)': blood_test['Alkaline_phosphatase_U_L'],
-            'Blood urea nitrogen (mg/dL)': blood_test['Blood_urea_nitrogen_mg_dL'],
-            'Total calcium (mg/dL)': blood_test['Total_calcium_mg_dL'],
-            'Creatine Phosphokinase (CPK) (IU/L)': blood_test['Creatine_Phosphokinase_CPK_IU_L'],
-            'Cholesterol (mg/dL)': blood_test['Cholesterol_mg_dL'],
-            'Bicarbonate (mmol/L)': blood_test['Bicarbonate_mmol_L'],
-            'Creatinine (mg/dL)': blood_test['Creatinine_mg_dL'],
-            'Gamma glutamyl transferase (U/L)': blood_test['Gamma_glutamyl_transferase_U_L'],
-            'Glucose, serum (mg/dL)': blood_test['Glucose_serum_mg_dL'],
-            'Iron, refrigerated (ug/dL)': blood_test['Iron_refrigerated_ug_dL'],
-            'Lactate Dehydrogenase (U/L)': blood_test['Lactate_dehydrogenase_U_L'],
-            'Phosphorus (mg/dL)': blood_test['Phosphorus_mg_dL'],
-            'Total bilirubin (mg/dL)': blood_test['Total_bilirubin_mg_dL'],
-            'Total protein (g/dL)': blood_test['Total_protein_g_dL'],
-            'Uric acid (mg/dL)': blood_test['Uric_acid_mg_dL'],
-            'Sodium (mmol/L)': blood_test['Sodium_mmol_L'],
-            'Potassium (mmol/L)': blood_test['Potassium_mmol_L'],
-            'Chloride (mmol/L)': blood_test['Chloride_mmol_L'],
-            'Osmolality (mmol/Kg)': blood_test['Osmolality_mmol_Kg'],
-            'Globulin (g/dL)': blood_test['Globulin_g_dL'],
-            'Triglycerides (mg/dL)': blood_test['Triglycerides_mg_dL']
-        })
-            
-         
-
-    reference_ranges = get_blood_tests_references(patientID)
-            
-    colored_blood_test_data = [color_mapping(blood_test, reference_ranges) for blood_test in formated_blood_tests]
-    combined_dict = {}
-    for key, values in colored_blood_test_data[0].items():
-        if key in reference_ranges:
-            combined_dict[key] = values + [reference_ranges[key]]
-    
-    return jsonify(combined_dict)
-
 @app.route('/blood_tests_references/raw/<int:patientID>', methods=['GET'])
 def get_blood_tests_references(patientID):
     
