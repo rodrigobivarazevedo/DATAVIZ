@@ -31,4 +31,4 @@ For testing /fhir_bundle run the file test_fhir_bundle.py which contains 3 bundl
 - yellow = close to outside range
 - green = normal range
   
-![Alt Text](heatmap3.png)
+![Alt Text](html_views.png)
