@@ -96,8 +96,8 @@ def process_fhir_bundle():
         patient_info = {}
         blood_results = {}
 
+    
         # Iterate through entries in the Bundle
-         # Iterate through entries in the Bundle
         for entry in fhir_bundle.entry:
             if entry.resource.resource_type == "Observation":
                 # Extract blood indicator and value from Observation
@@ -130,8 +130,7 @@ def process_fhir_bundle():
                 WHERE FIRST_NAME = ? AND LAST_NAME = ? AND BIRTH_DATE = ? AND GENDER = ?
             """, patient_info["first_name"], patient_info["last_name"], patient_info['birthDate'], patient_info['gender'])
 
-        
-            if not selected_patient:
+            if not selected_patient[0]['ID']:
                 # Insert patient information into the 'patients' table
                 db.execute("INSERT INTO patients_new (FIRST_NAME, LAST_NAME, BIRTH_DATE, GENDER) VALUES (?, ?, ?, ?)",
                         patient_info["first_name"], patient_info["last_name"], patient_info['birthDate'], patient_info['gender'])
@@ -146,6 +145,7 @@ def process_fhir_bundle():
                     SELECT * FROM blood_indicators
                     WHERE ID = ? AND DATE = ?
                 """, patient_id, blood_results["Albumin [Mass/volume] in Serum or Plasma"]['effective_date'])
+
 
             if not existing_data:
                 # Insert blood test results into the 'blood_indicators' table

@@ -6,7 +6,7 @@ input.addEventListener('input', async function () {
 
     d3.select('#histogram').selectAll('*').remove();
     d3.select('#heatmap').selectAll('*').remove();
-    d3.select('#violin_plot').selectAll('*').remove();
+    d3.select('#box-plot').selectAll('*').remove();
     document.getElementById("blood_indicator").innerHTML = '';
     // Check if there is no input
     if (!patientID) {
@@ -50,9 +50,7 @@ input.addEventListener('input', async function () {
     select.addEventListener('change', function () {
         let selectedDate = this.value;
         if (selectedDate !== 'Select Blood Test Date...') {
-            // Call the desired functions when an option is selected
             drawHeatmap(patientID, selectedDate);
-            //toggleButton(selectedDate);
         }
     });
 
@@ -254,26 +252,6 @@ function getValuesOverTime(formattedBloodTests, selectedIndicator, ranges, blood
    
     display_history_mean(range, blood_indicator_history, selectedIndicator)
     generateHistogram(blood_indicator_history,selectedIndicator);
-    
-    // Display results on the screen
-    const violinPlotDiv = document.getElementById('violin_plot');
-    if (!boxPlotFormCreated) {
-        // Create demographic distribution elements
-        const demographicDistributionDiv = document.createElement('div');
-        demographicDistributionDiv.classList.add('mt-1');
-
-        const label = document.createElement('label');
-        label.classList.add('mt-1');
-        label.innerHTML = '<strong>Demographic Distribution:</strong>';
-        demographicDistributionDiv.appendChild(label);
-
-        const boxPlotDiv = document.createElement('div');
-        boxPlotDiv.setAttribute('id', 'box-plot');
-        demographicDistributionDiv.appendChild(boxPlotDiv);
-
-        violinPlotDiv.appendChild(demographicDistributionDiv);
-        boxPlotFormCreated = true; // Set the flag to true after creating the form
-    } 
     updateBoxPlot(selectedIndicator.split(" ").slice(0, -1).join(' ').trim(), blood_indicator_value);
    
 }
@@ -287,6 +265,7 @@ function display_history_mean(referenceRange, blood_indicator_history, selectedI
     blood_indicator.innerHTML = `
         <h5>${selectedIndicator}</h5>
         <p><strong>Reference Range:</strong> ${referenceRange.min.toFixed(2)} - ${referenceRange.max.toFixed(2)}</p>
+        <p class="mt-1"><strong>Demographic Distribution:</strong></p>
     `;
 }
 
@@ -391,6 +370,7 @@ svg.selectAll(".bar-label")
 
 // Function to draw the box plot
 function drawBoxPlot(data, value) {
+    d3.select('#box-plot').selectAll('*').remove();
     // set the dimensions and margins of the graph
     var margin = { top: 10, right: 40, bottom: 30, left: 10 },
         width = 400 - margin.left - margin.right,
