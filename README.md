@@ -5,11 +5,12 @@
 The app provides raw json data via the routes:
 
 - /<int:patientID>/raw   
-- /all_blood_tests/raw/<int:patientID> 
+- /all_blood_tests/raw/<int:patientID>
+- /all_blood_tests/raw/<int:patientID>?date=date (blood test for specific date)
 
 The app provides FHIR data via the routes:
 
-- /<int:patientID>/fhir'  
+- /<int:patientID>/fhir
 
 
 The app stores and reads post FHIR data via the routes: 
