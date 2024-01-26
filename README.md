@@ -22,6 +22,13 @@ The route still can only handle a single bundle at one time, so for storing mult
 For testing /fhir_bundle run the file test_fhir_bundle.py which contains 3 bundles for the same patient with three different blood test results. To test it just replace at the end of the code the line "response = requests.post(url, json=real_fhir_bundle_with_patient1)" with either real_fhir_bundle_with_patient1, real_fhir_bundle_with_patient2, real_fhir_bundle_with_patient3
 
 
+### How to use the app
+
+- input a patient ID
+- a dropdown at the top will appear with all the available dates of blood tests
+- after selecting a date a heatmap of the blood test will appear
+- click in any of the blood indicators from the heatmap for a more detailed info
+- a histogram and box plot will appear with historical and demographic data all about the selected blood indicator
 
 
 ### The HTML views
